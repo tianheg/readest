@@ -7,17 +7,18 @@ import Providers from '@/components/Providers';
 
 import '../styles/globals.css';
 
-const url = 'https://web.readest.com/';
+// Fork note (decommercialize): the OG/Twitter metadata below used to advertise
+// the vendor's domain (`web.readest.com`) and preview image on `cdn.readest.com`.
+// This build is a local Tauri app — there is no share target to preview for —
+// so the vendor URLs are gone; only the local manifest/icons remain.
 const title = 'Readest — Where You Read, Digest and Get Insight';
 const description =
   'Discover Readest, the ultimate online ebook reader for immersive and organized reading. ' +
   'Enjoy seamless access to your digital library, powerful tools for highlighting, bookmarking, ' +
   'and note-taking, and support for multiple book views. ' +
   'Perfect for deep reading, analysis, and understanding. Explore now!';
-const previewImage = 'https://cdn.readest.com/images/open_graph_preview_read_now.png';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(url),
   title: {
     default: title,
     template: '%s | Readest',
@@ -26,12 +27,6 @@ export const metadata: Metadata = {
   generator: 'Next.js',
   manifest: '/manifest.json',
   keywords: ['epub', 'pdf', 'ebook', 'reader', 'readest', 'pwa'],
-  authors: [
-    {
-      name: 'readest',
-      url: 'https://github.com/readest/readest',
-    },
-  ],
   icons: {
     icon: [{ url: '/icon.png' }, { url: '/favicon.ico' }],
     apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
@@ -41,23 +36,8 @@ export const metadata: Metadata = {
     title: 'Readest',
     statusBarStyle: 'default',
   },
-  openGraph: {
-    type: 'website',
-    url,
-    title,
-    description,
-    images: [previewImage],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title,
-    description,
-    images: [previewImage],
-  },
   other: {
     'apple-mobile-web-app-capable': 'yes',
-    'twitter:domain': 'web.readest.com',
-    'twitter:url': url,
   },
 };
 
