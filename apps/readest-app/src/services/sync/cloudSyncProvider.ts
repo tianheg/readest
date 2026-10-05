@@ -67,8 +67,13 @@ export const hasAnyThirdPartyEnabled = (settings: SystemSettings | null | undefi
  * Cloud. Once the user touches a Cloud Sync checkbox the flag is explicit and
  * wins.
  */
-export const isReadestCloudEnabled = (settings: SystemSettings | null | undefined): boolean =>
-  settings?.readestCloud?.enabled ?? !hasAnyThirdPartyEnabled(settings);
+export const isReadestCloudEnabled = (_settings: SystemSettings | null | undefined): boolean =>
+  // Fork note (decommercialize): this build has no vendor backend, so the
+  // native Readest Cloud provider is never a sync target — an absent
+  // `readestCloud.enabled` no longer falls back to "on" when no third-party
+  // backend is enabled. Third-party file sync (WebDAV/S3/… ) and KOSync are
+  // unaffected.
+  false;
 
 /** Every provider syncing the library on this device, Readest Cloud first. */
 export const getCloudSyncProviders = (
