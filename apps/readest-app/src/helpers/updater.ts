@@ -140,6 +140,14 @@ export const checkForAppUpdates = async (
   isAutoCheck = true,
   updateChannel: 'stable' | 'nightly' = 'stable',
 ): Promise<boolean> => {
+  // Fork note (decommercialize): this build has no update channel — the vendor
+  // manifest would hand back a newer *official* release and the installer would
+  // replace this patched build with it. Update checks are off unless a build
+  // explicitly opts in. Deliberately a runtime comparison rather than a literal
+  // early return: TypeScript still analyses the code below, so the implementation
+  // stays type-checked and a rebase stays a two-line diff.
+  if (process.env['NEXT_PUBLIC_ENABLE_UPDATER'] !== 'on') return false;
+
   const lastCheck = localStorage.getItem(LAST_CHECK_KEY);
   const now = Date.now();
   if (isAutoCheck && lastCheck && now - parseInt(lastCheck, 10) < CHECK_UPDATE_INTERVAL_SEC * 1000)
@@ -218,6 +226,10 @@ export const getLastShownReleaseNotesVersion = () => {
 };
 
 export const checkAppReleaseNotes = async (isAutoCheck = true) => {
+  // Fork note (decommercialize): no release-notes feed in this fork — see
+  // `checkForAppUpdates` above.
+  if (process.env['NEXT_PUBLIC_ENABLE_UPDATER'] !== 'on') return false;
+
   const currentVersion = getAppVersion();
   const lastShownVersion = getLastShownReleaseNotesVersion();
   if ((lastShownVersion && semver.gt(currentVersion, lastShownVersion)) || !isAutoCheck) {

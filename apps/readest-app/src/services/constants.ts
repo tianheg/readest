@@ -966,13 +966,19 @@ export const SHARE_TOKEN_LENGTH = 22;
 export const SHARE_PRESIGN_TTL_SECONDS = 300;
 export const SHARE_CFI_MAX_LENGTH = 512;
 
-const LATEST_DOWNLOAD_BASE_URL = 'https://download.readest.com/releases';
+// Fork note (decommercialize): these pointed at the vendor's release feed, and
+// they are read directly by `components/UpdaterWindow.tsx` (fetch, no gate) as
+// well as by `helpers/updater.ts` (gated behind `NEXT_PUBLIC_ENABLE_UPDATER`).
+// Neutralised at the source so no build of this fork can reach the vendor's
+// update channel even if the updater UI is opened — and so the endpoint
+// strings no longer ship in the bundle.
+const LATEST_DOWNLOAD_BASE_URL = '';
 
 export const READEST_UPDATER_FILE = `${LATEST_DOWNLOAD_BASE_URL}/latest.json`;
 
 export const READEST_CHANGELOG_FILE = `${LATEST_DOWNLOAD_BASE_URL}/release-notes.json`;
 
-export const READEST_NIGHTLY_UPDATER_FILE = 'https://download.readest.com/nightly/latest.json';
+export const READEST_NIGHTLY_UPDATER_FILE = '';
 
 // Public (verification) key, identical to src-tauri/tauri.conf.json `updater.pubkey`.
 // Used to verify nightly artifacts in the custom install flows (portable /

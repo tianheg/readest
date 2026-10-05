@@ -736,8 +736,15 @@ pub fn run() {
 
     let builder = builder.plugin(tauri_plugin_deep_link::init());
 
-    #[cfg(desktop)]
-    let builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
+    // Fork note (decommercialize): upstream registers the updater plugin here so
+    // the app can pull vendor releases. This fork has no update channel — the
+    // vendor manifest would replace this build with an official one — so the
+    // plugin is not registered. `createUpdaterArtifacts` and the endpoint list
+    // are gone from tauri.conf.json, and the JS entry points
+    // (`helpers/updater.ts`) return early unless a build opts in. The crate
+    // stays a dependency because `nightly_update.rs` still compiles against it;
+    // its verify/install commands are registered below but unreachable: nothing
+    // invokes them without the plugin's runtime state.
 
     // Strip invalid geometry from the saved window state before the
     // window-state plugin loads it, so a bad `.window-state.json` (e.g. the

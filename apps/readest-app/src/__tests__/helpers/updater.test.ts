@@ -77,6 +77,12 @@ import {
 beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();
+  // Fork note (decommercialize): `helpers/updater.ts` early-returns unless a
+  // build opts in with NEXT_PUBLIC_ENABLE_UPDATER=on (this fork ships no update
+  // channel). The suite tests the check logic itself, so opt in here — the
+  // opt-out behaviour is covered by the constants being neutralised and by the
+  // runtime guard, not by every caller asserting on it.
+  vi.stubEnv('NEXT_PUBLIC_ENABLE_UPDATER', 'on');
   mockIsTauriAppPlatform = false;
   mockAppVersion = '1.0.0';
   MockWebviewWindowLastArgs.length = 0;
@@ -87,6 +93,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
 });
 
 // ── Helper to create a dummy TranslationFunc ─────────────────────
