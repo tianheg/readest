@@ -26,14 +26,17 @@ beforeEach(() => clearSettings());
 afterEach(() => clearSettings());
 
 describe('isSyncCategoryEnabled', () => {
-  test('defaults to true when settings are not loaded yet', () => {
-    expect(isSyncCategoryEnabled('book')).toBe(true);
+  // Fork note (decommercialize): `book` is provider-gated and Readest Cloud is
+  // hard-off, so the previously-on default now resolves false for provider-
+  // gated ids; unguarded ids still default to true.
+  test('defaults to true for unguarded ids when settings are not loaded yet', () => {
+    expect(isSyncCategoryEnabled('book')).toBe(false);
     expect(isSyncCategoryEnabled('dictionary')).toBe(true);
   });
 
-  test('defaults to true when syncCategories map is missing', () => {
+  test('provider-gated ids stay off when syncCategories map is missing', () => {
     setSettings({});
-    expect(isSyncCategoryEnabled('book')).toBe(true);
+    expect(isSyncCategoryEnabled('book')).toBe(false);
     expect(isSyncCategoryEnabled('opds_catalog')).toBe(true);
   });
 
@@ -83,14 +86,17 @@ describe('isSyncCategoryEnabled', () => {
       expect(isSyncCategoryEnabled('progress')).toBe(false);
     });
 
-    test('no gating when readest is the provider', () => {
+    // Fork: upstream derived Readest Cloud ON from these settings (no
+    // third-party backend), which opened the gate. The vendor provider no
+    // longer exists, so the native channels stay gated for good.
+    test('native channels stay gated even when no third-party provider is on', () => {
       setSettings({
         webdav: { enabled: false },
         googleDrive: { enabled: false },
       } as Partial<SystemSettings>);
-      expect(isSyncCategoryEnabled('book')).toBe(true);
-      expect(isSyncCategoryEnabled('progress')).toBe(true);
-      expect(isSyncCategoryEnabled('note')).toBe(true);
+      expect(isSyncCategoryEnabled('book')).toBe(false);
+      expect(isSyncCategoryEnabled('progress')).toBe(false);
+      expect(isSyncCategoryEnabled('note')).toBe(false);
     });
   });
 
@@ -193,14 +199,16 @@ describe('isSyncCategoryEnabled', () => {
   });
 
   describe('provider gating with multiple providers', () => {
-    test('native book channels stay on when Readest Cloud runs alongside Drive', () => {
+    // Fork: an explicit `readestCloud.enabled: true` is ignored — the flag
+    // cannot conjure a backend (see isReadestCloudEnabled, hard-off).
+    test('native book channels stay gated even with an explicit readestCloud flag', () => {
       setSettings({
         readestCloud: { enabled: true },
         googleDrive: { enabled: true },
       } as Partial<SystemSettings>);
-      expect(isSyncCategoryEnabled('book')).toBe(true);
-      expect(isSyncCategoryEnabled('progress')).toBe(true);
-      expect(isSyncCategoryEnabled('note')).toBe(true);
+      expect(isSyncCategoryEnabled('book')).toBe(false);
+      expect(isSyncCategoryEnabled('progress')).toBe(false);
+      expect(isSyncCategoryEnabled('note')).toBe(false);
     });
 
     test('native book channels gate off when Readest Cloud is unchecked', () => {

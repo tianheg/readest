@@ -72,11 +72,15 @@ describe('useCloudSyncStatus (issue #5910)', () => {
     expect(result.current.providers.map((p) => p.kind)).toEqual(['webdav']);
   });
 
-  it('still asks for sign-in when Readest Cloud is the only provider', () => {
+  // Fork: the vendor provider never appears, so with no backend at all the
+  // hook reports "Never synced" instead of prompting a sign-in that would go
+  // nowhere (needsSignIn can only fire when every provider is `readest`).
+  it('never asks for sign-in with no provider configured', () => {
     const { result } = renderHook(() => useCloudSyncStatus(0));
 
-    expect(result.current.needsSignIn).toBe(true);
-    expect(result.current.label).toBe('Sign in to Sync');
+    expect(result.current.providers).toEqual([]);
+    expect(result.current.needsSignIn).toBe(false);
+    expect(result.current.label).toBe('Never synced');
   });
 
   it('ignores the native stamp when Readest Cloud is switched off', () => {
@@ -94,7 +98,8 @@ describe('useCloudSyncStatus (issue #5910)', () => {
     expect(result.current.label).toBe('Never synced');
   });
 
-  it('lists both providers with their own timestamps', () => {
+  // Fork: no `readest` row any more — the backend carries the status alone.
+  it('lists the enabled backend with its timestamp', () => {
     mockUser = { id: 'u1' };
     mockSettings = {
       readestCloud: { enabled: true },
@@ -103,7 +108,6 @@ describe('useCloudSyncStatus (issue #5910)', () => {
     const { result } = renderHook(() => useCloudSyncStatus(NOW - 300_000));
 
     expect(result.current.providers).toEqual([
-      expect.objectContaining({ kind: 'readest', lastSyncedAt: NOW - 300_000 }),
       expect.objectContaining({ kind: 'webdav', lastSyncedAt: NOW - 120_000 }),
     ]);
     // The row shows the freshest; the per-provider breakdown is the dialog's job.
@@ -200,11 +204,13 @@ describe('useCloudSyncStatus Hardcover (book scope)', () => {
     expect(b.label).toContain('Synced {{time}}');
   });
 
+  // Fork: no readest row → even with Hardcover alone the hook must not push a
+  // signed-out user at a login that cannot enable the vendor provider.
   it('does not send a signed-out user to login when Hardcover can still sync', () => {
     mockSettings = { hardcover: { enabled: true, autoSync: true, accessToken: 'tok' } } as never;
     const { result } = renderHook(() => useCloudSyncStatus(0, 'book-a'));
 
-    expect(result.current.providers.map((p) => p.kind)).toEqual(['readest', 'hardcover']);
+    expect(result.current.providers.map((p) => p.kind)).toEqual(['hardcover']);
     expect(result.current.needsSignIn).toBe(false);
   });
 });

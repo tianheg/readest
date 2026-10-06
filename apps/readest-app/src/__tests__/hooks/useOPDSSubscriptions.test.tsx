@@ -134,7 +134,11 @@ describe('useOPDSSubscriptions', () => {
     );
   });
 
-  test('queues a cloud upload for a new book when Books sync is on', async () => {
+  // Fork: the OPDS→cloud upload helper is hard-gated (isSyncCategoryEnabled
+  // resolves false without a vendor provider), so a freshly imported book
+  // never reaches transferManager.queueUpload — file-sync backends pick it up
+  // through the file-sync engine instead.
+  test('does not queue a cloud upload for a new book (this fork)', async () => {
     vi.useFakeTimers();
     try {
       currentUser = { id: 'user-1' };
@@ -152,7 +156,7 @@ describe('useOPDSSubscriptions', () => {
         vi.advanceTimersByTime(3000);
       });
 
-      expect(mockedQueueUpload).toHaveBeenCalledWith(book);
+      expect(mockedQueueUpload).not.toHaveBeenCalled();
     } finally {
       vi.useRealTimers();
     }

@@ -29,7 +29,8 @@ const setSettings = (settings: Partial<SystemSettings>) => {
 
 beforeEach(() => {
   vi.useFakeTimers();
-  // Readest Cloud is active by default (no third-party provider enabled).
+  // Fork: default settings hold no vendor provider (hard-off), so the gate
+  // under test below is real — Readest Cloud is never "active by default".
   setSettings({});
 });
 
@@ -39,13 +40,16 @@ afterEach(() => {
 });
 
 describe('queueOPDSBookUploads', () => {
-  test('queues an upload for a new book after the init delay', () => {
+  // Fork: the vendor cloud route is gone — isSyncCategoryEnabled('book')
+  // resolves false even with no third-party provider, so the init-delay
+  // scheduler never fires, whatever the categories say.
+  test('never queues after the init delay (no vendor cloud in this fork)', () => {
     const book = makeBook('b1');
     queueOPDSBookUploads(true, useSettingsStore.getState().settings, [book]);
 
     expect(mockedQueueUpload).not.toHaveBeenCalled();
     vi.advanceTimersByTime(3000);
-    expect(mockedQueueUpload).toHaveBeenCalledWith(book);
+    expect(mockedQueueUpload).not.toHaveBeenCalled();
   });
 
   test('does NOT queue when the Manage Sync "Books" category is off', () => {
@@ -71,13 +75,15 @@ describe('queueOPDSBookUploads', () => {
     expect(mockedQueueUpload).not.toHaveBeenCalled();
   });
 
-  test('skips books that already have a cloud copy and dedupes by hash', () => {
+  // The already-uploaded dedupe runs downstream of the gate; with the gate
+  // hard-off (fork) every book is dropped before it, so dedupe on this path
+  // is unreachable — assert the gate itself drops them all.
+  test('drops everything before dedupe (vendor route gated off)', () => {
     const fresh = makeBook('fresh');
     const uploaded = makeBook('uploaded', { uploadedAt: 123 });
     queueOPDSBookUploads(true, useSettingsStore.getState().settings, [fresh, fresh, uploaded]);
 
     vi.advanceTimersByTime(3000);
-    expect(mockedQueueUpload).toHaveBeenCalledTimes(1);
-    expect(mockedQueueUpload).toHaveBeenCalledWith(fresh);
+    expect(mockedQueueUpload).not.toHaveBeenCalled();
   });
 });

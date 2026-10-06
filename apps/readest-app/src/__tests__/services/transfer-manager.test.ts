@@ -107,9 +107,12 @@ beforeEach(() => {
   resetTransferManager();
   vi.clearAllMocks();
   localStorage.clear();
-  // Book uploads are gated on the selected cloud sync provider and
-  // deferred until settings hydrate; hydrate with Readest Cloud selected
-  // so the pre-gating behavior under test is preserved.
+  // Fork: the book-upload gate is hard-closed in this build (no Readest Cloud
+  // storage exists), so with real code queueUpload always returns null and the
+  // queue/cancel/retry/execute machinery below would be unreachable. The
+  // provider *policy* itself is pinned against the real gate in
+  // transfer-manager-gating.test.ts; here we open just this one gate with a
+  // spy so the machinery keeps its coverage.
   useSettingsStore.setState({
     settings: {
       version: 1,
@@ -117,6 +120,7 @@ beforeEach(() => {
       googleDrive: { enabled: false },
     } as SystemSettings,
   });
+  vi.spyOn(transferManager, 'isBookUploadAllowed').mockReturnValue(true);
   vi.spyOn(console, 'warn').mockImplementation(() => {});
   vi.spyOn(console, 'error').mockImplementation(() => {});
 });

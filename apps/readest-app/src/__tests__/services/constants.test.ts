@@ -897,13 +897,15 @@ describe('services/constants', () => {
       expect(READEST_NODE_BASE_URL).toMatch(/^https:\/\//);
     });
 
-    it('READEST_UPDATER_FILE is a URL ending with .json', () => {
-      expect(READEST_UPDATER_FILE).toMatch(/^https:\/\//);
+    // Fork note (decommercialize): the update channel is gone, so these are
+    // deliberately no longer absolute URLs (see services/constants.ts).
+    it('READEST_UPDATER_FILE is not an absolute vendor URL', () => {
+      expect(READEST_UPDATER_FILE).not.toMatch(/^https:\/\//);
       expect(READEST_UPDATER_FILE).toMatch(/\.json$/);
     });
 
-    it('READEST_CHANGELOG_FILE is a URL ending with .json', () => {
-      expect(READEST_CHANGELOG_FILE).toMatch(/^https:\/\//);
+    it('READEST_CHANGELOG_FILE is not an absolute vendor URL', () => {
+      expect(READEST_CHANGELOG_FILE).not.toMatch(/^https:\/\//);
       expect(READEST_CHANGELOG_FILE).toMatch(/\.json$/);
     });
 

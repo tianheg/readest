@@ -63,8 +63,9 @@ afterEach(() => {
 
 describe('ReadestCloudOptIn', () => {
   test('renders nothing until the settings store is hydrated', () => {
-    // A cold /auth load leaves the store empty, and isReadestCloudEnabled
-    // derives ON from `{}` — showing a checked box over a stored opt-out.
+    // A cold /auth load leaves the store empty; upstream isReadestCloudEnabled
+    // derived ON from `{}` — showing a checked box over a stored opt-out.
+    // (Fork: the provider is hard-off, but the hydration guard stays.)
     useSettingsStore.setState({ settings: {} as SystemSettings } as never);
     render(<ReadestCloudOptIn />);
     expect(screen.queryByRole('checkbox')).toBeNull();
@@ -81,47 +82,50 @@ describe('ReadestCloudOptIn', () => {
     expect(box().checked).toBe(false);
   });
 
-  test('starts checked on a fresh install, matching the derived default', () => {
+  // Fork (decommercialize): isReadestCloudEnabled is hard-off — no vendor
+  // backend exists — so the box starts unchecked even on a fresh install, and
+  // it can never render checked no matter what the flag says.
+
+  test('starts unchecked on a fresh install (vendor provider hard-off)', () => {
     useSettingsStore.setState({ settings: freshInstall } as never);
     render(<ReadestCloudOptIn />);
-    expect(box().checked).toBe(true);
-  });
-
-  test('unchecking writes the same explicit opt-out the Integrations checkbox does', async () => {
-    useSettingsStore.setState({ settings: freshInstall } as never);
-    render(<ReadestCloudOptIn />);
-
-    fireEvent.click(box());
-
-    await waitFor(() => {
-      expect(useSettingsStore.getState().settings.readestCloud?.enabled).toBe(false);
-    });
-    expect(useSettingsStore.getState().settings.readestCloud?.disabledAt).toBeTruthy();
-    expect(saveSettings).toHaveBeenCalled();
     expect(box().checked).toBe(false);
   });
 
-  test('re-checking clears the flag instead of pinning it to true', async () => {
+  // The box starts unchecked, so a toggle reads as "turn it on" → the write
+  // clears to the derived default (undefined) instead of pinning an opt-out.
+  test('toggling clears to derived and leaves the box unchecked', async () => {
     useSettingsStore.setState({ settings: freshInstall } as never);
     render(<ReadestCloudOptIn />);
 
     fireEvent.click(box());
-    await waitFor(() => {
-      expect(useSettingsStore.getState().settings.readestCloud?.enabled).toBe(false);
-    });
-    fireEvent.click(box());
 
-    // An explicit `true` here would retire the `?? !hasAnyThirdPartyEnabled`
-    // fallback, so enabling WebDAV later would leave Readest Cloud on and the
-    // library would upload to both.
-    await waitFor(() => {
-      expect(useSettingsStore.getState().settings.readestCloud?.enabled).toBeUndefined();
-    });
+    await waitFor(() => expect(saveSettings).toHaveBeenCalled());
+    expect(useSettingsStore.getState().settings.readestCloud?.enabled).toBeUndefined();
     expect(useSettingsStore.getState().settings.readestCloud?.disabledAt).toBeUndefined();
-    expect(box().checked).toBe(true);
+    expect(box().checked).toBe(false);
   });
 
-  test('shows the derived off state when a third-party backend already syncs, and pins true when checked', async () => {
+  // Both toggles take the same "next = checked=true" path while the box is
+  // stuck unchecked, so the flag stays in derived state throughout.
+  test('two toggles keep the flag in derived state', async () => {
+    useSettingsStore.setState({ settings: freshInstall } as never);
+    render(<ReadestCloudOptIn />);
+
+    fireEvent.click(box());
+    await waitFor(() => expect(saveSettings).toHaveBeenCalledTimes(1));
+    fireEvent.click(box());
+    await waitFor(() => expect(saveSettings).toHaveBeenCalledTimes(2));
+
+    expect(useSettingsStore.getState().settings.readestCloud?.enabled).toBeUndefined();
+    expect(useSettingsStore.getState().settings.readestCloud?.disabledAt).toBeUndefined();
+    expect(box().checked).toBe(false);
+  });
+
+  // With a third-party backend the toggle still pins `enabled: true` into
+  // settings (the derivation would disagree with clearing), but the hard-off
+  // provider ignores the pin — the box stays unchecked.
+  test('writes an explicit pin when a third-party backend is on, box stays unchecked', async () => {
     useSettingsStore.setState({ settings: withWebDAV } as never);
     render(<ReadestCloudOptIn />);
 
@@ -134,6 +138,6 @@ describe('ReadestCloudOptIn', () => {
     await waitFor(() => {
       expect(useSettingsStore.getState().settings.readestCloud?.enabled).toBe(true);
     });
-    expect(box().checked).toBe(true);
+    expect(box().checked).toBe(false);
   });
 });

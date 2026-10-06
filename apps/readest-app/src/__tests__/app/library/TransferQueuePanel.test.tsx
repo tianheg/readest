@@ -1,11 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 
 import type { Book } from '@/types/book';
 import type { SystemSettings } from '@/types/settings';
 import { useLibraryStore } from '@/store/libraryStore';
 import { useSettingsStore } from '@/store/settingsStore';
-import { transferManager } from '@/services/transferManager';
 
 vi.mock('@/hooks/useTranslation', () => ({
   useTranslation: () => (text: string) => text,
@@ -37,10 +36,13 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('TransferQueuePanel Upload All', () => {
-  it('is offered while Readest Cloud and Books sync are on', () => {
+  // Fork: `uploadAllowed` needs an active Readest Cloud storage, which is
+  // hard-off in this build — the bulk button can never render, so the
+  // "still queued" book below would have no vendor destination anyway.
+  it('is never offered — no Readest Cloud storage to upload to', () => {
     withSettings();
     render(<TransferQueuePanel />);
-    expect(screen.queryByLabelText('Upload All')).not.toBeNull();
+    expect(screen.queryByLabelText('Upload All')).toBeNull();
   });
 
   // Uploads made with Books sync off never get a `books` row, so no other
@@ -60,16 +62,16 @@ describe('TransferQueuePanel Download All', () => {
     uploadedAt: 1000,
   };
 
-  // A library-wide download would otherwise toast "Book downloaded" once per
-  // book for the whole run (#6418); the panel itself shows the progress.
-  it('queues the downloads in the background', () => {
+  // Fork: `booksToDownload` also requires an active Readest Cloud storage, so
+  // the bulk button stays hidden even with cloud-copy books present. Per-book
+  // download (incl. WebDAV-mirrored copies) goes through
+  // useBookTransferActions and is unaffected; the background-toast mechanism
+  // (#6418) is still covered by transfer-manager's `supports isBackground` test.
+  it('is never offered — no Readest Cloud storage to download from', () => {
     withSettings();
     useLibraryStore.setState({ getVisibleLibrary: () => [cloudOnlyBook] });
-    const queueDownload = vi.spyOn(transferManager, 'queueDownload').mockReturnValue('t-1');
 
     render(<TransferQueuePanel />);
-    fireEvent.click(screen.getByLabelText('Download All'));
-
-    expect(queueDownload).toHaveBeenCalledWith(cloudOnlyBook, undefined, true);
+    expect(screen.queryByLabelText('Download All')).toBeNull();
   });
 });

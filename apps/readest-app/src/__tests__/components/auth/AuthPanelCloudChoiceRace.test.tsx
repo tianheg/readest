@@ -52,7 +52,10 @@ afterEach(() => {
 });
 
 describe('AuthPanel cloud choice vs OAuth redirect', () => {
-  test('holds provider sign-in until the opt-out has been written', async () => {
+  // Fork: the box starts unchecked (hard-off provider), so the toggle writes
+  // the derived-clear (`enabled: undefined`) rather than an explicit opt-out.
+  // The gate itself — sign-in waits for the write to resolve — is unchanged.
+  test('holds provider sign-in until the cloud-choice write resolves', async () => {
     const onProviderSignIn = vi.fn(async () => {});
     render(
       <AuthPanel
@@ -72,7 +75,7 @@ describe('AuthPanel cloud choice vs OAuth redirect', () => {
     releaseSave();
 
     await waitFor(() => expect(onProviderSignIn).toHaveBeenCalledTimes(1));
-    expect(useSettingsStore.getState().settings.readestCloud?.enabled).toBe(false);
+    expect(useSettingsStore.getState().settings.readestCloud?.enabled).toBeUndefined();
   });
 
   test('does not delay sign-in when the box was never touched', async () => {

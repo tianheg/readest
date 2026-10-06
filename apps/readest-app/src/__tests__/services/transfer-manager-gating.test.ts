@@ -150,11 +150,15 @@ describe('provider gating of book uploads', () => {
     expect(Object.keys(useTransferStore.getState().transfers)).toHaveLength(0);
   });
 
-  test('queueUpload works when Readest Cloud is the provider', async () => {
+  // Fork: upstream derived Readest Cloud ON from these default settings, so
+  // the gate opened. In this build there is no vendor provider to derive from
+  // — the same default now refuses every upload.
+  test('queueUpload returns null under default settings (no vendor provider)', async () => {
     await initManager();
 
     const id = transferManager.queueUpload(makeBook());
-    expect(id).toBeTruthy();
+    expect(id).toBeNull();
+    expect(Object.keys(useTransferStore.getState().transfers)).toHaveLength(0);
   });
 
   test('queueBatchUploads returns empty when gated', async () => {
@@ -196,12 +200,17 @@ describe('Books sync category gating of book uploads', () => {
     expect(Object.keys(useTransferStore.getState().transfers)).toHaveLength(0);
   });
 
-  test('turning Books sync off policy-cancels pending book uploads', async () => {
+  // Fork: once settings are live the gate can no longer open (no vendor
+  // provider), so uploads only exist when queued *before* hydration — which
+  // is exactly the shape the reconcile still meets in production: a deferred
+  // row gets policy-cancelled the moment settings come live against it.
+  test('a pre-hydration book upload is policy-cancelled once settings come live', async () => {
+    settingsNotLoaded();
     await initManager();
     useTransferStore.getState().pauseQueue();
     const id = transferManager.queueUpload(makeBook())!;
 
-    booksSyncOff();
+    settingsLoaded();
     await flushAsync();
 
     const transfer = useTransferStore.getState().transfers[id];
@@ -209,9 +218,9 @@ describe('Books sync category gating of book uploads', () => {
     expect(transfer?.cancelReason).toBe('policy');
   });
 
-  test('isBookUploadAllowed reflects the Books sync category', () => {
+  test('isBookUploadAllowed never opens (no Readest Cloud storage exists)', () => {
     settingsLoaded();
-    expect(transferManager.isBookUploadAllowed()).toBe(true);
+    expect(transferManager.isBookUploadAllowed()).toBe(false);
     booksSyncOff();
     expect(transferManager.isBookUploadAllowed()).toBe(false);
   });
@@ -234,7 +243,12 @@ describe('ABS books never enter the cloud file transfer queue', () => {
     expect(Object.keys(useTransferStore.getState().transfers)).toHaveLength(0);
   });
 
-  test('queueBatchUploads drops ABS books but still queues the rest', async () => {
+  // Fork: queueBatchUploads maps through queueUpload, whose live-settings gate
+  // is hard-closed — everything is dropped. Pre-hydration the ABS rejection
+  // (which runs before the provider gate) is still observable: ABS drops, the
+  // rest defers.
+  test('queueBatchUploads drops ABS books but queues the rest before hydration', async () => {
+    settingsNotLoaded();
     await initManager();
 
     const ids = transferManager.queueBatchUploads([
@@ -262,7 +276,11 @@ describe('settings-loaded barrier', () => {
     expect(useTransferStore.getState().transfers['t1']?.status).toBe('pending');
   });
 
-  test('the deferred upload executes once settings hydrate with readest selected', async () => {
+  // Fork: hydration used to approve the deferred row ("readest selected") and
+  // release it for execution. In this build hydration always sides against
+  // vendor uploads, so the deferred row is instead policy-cancelled — visible,
+  // never a silent drop, and uploadBook stays untouched.
+  test('the deferred upload is policy-cancelled once settings hydrate', async () => {
     settingsNotLoaded();
     localStorage.setItem(
       'readest_transfer_queue',
@@ -277,7 +295,9 @@ describe('settings-loaded barrier', () => {
     settingsLoaded();
     await flushAsync();
 
-    expect(appService['uploadBook']).toHaveBeenCalledTimes(1);
+    expect(appService['uploadBook']).not.toHaveBeenCalled();
+    expect(useTransferStore.getState().transfers['t1']?.status).toBe('cancelled');
+    expect(useTransferStore.getState().transfers['t1']?.cancelReason).toBe('policy');
   });
 
   test('replica transfers are not stalled by the barrier', async () => {
@@ -330,7 +350,12 @@ describe('policy cancellation on restore/reconcile', () => {
     expect(transfers['rep1']?.status).toBe('pending');
   });
 
+  // Fork: live settings refuse new uploads outright (no vendor provider), so
+  // seed the row while settings are still un-hydrated — the shape that can
+  // exist in production — then switch the provider: the gate sides against
+  // it and the reconcile policy-cancels the row.
   test('switching providers after init policy-cancels pending book uploads', async () => {
+    settingsNotLoaded();
     await initManager();
     useTransferStore.getState().pauseQueue();
     const id = transferManager.queueUpload(makeBook())!;
@@ -424,7 +449,11 @@ describe('cancelled bucket accounting', () => {
     expect(useTransferStore.getState().transfers['p1']?.status).toBe('cancelled');
   });
 
+  // Fork: a live-settings queueUpload returns null, so use the pre-hydration
+  // window to create the row the user can then cancel; the (loaded) reconcile
+  // never runs while settings stay un-hydrated, leaving the user reason intact.
   test('user cancelTransfer records cancelReason user', async () => {
+    settingsNotLoaded();
     await initManager();
     useTransferStore.getState().pauseQueue();
     const id = transferManager.queueUpload(makeBook())!;
@@ -455,6 +484,14 @@ describe('cancelled bucket accounting', () => {
 });
 
 describe('quota failure handling', () => {
+  // These tests exercise upload-execution error handling (retries, summary
+  // toasts), not the provider gate. With the fork's gate hard-closed the
+  // uploads could never start, so open this one gate with a spy — the real
+  // gate stays covered by the provider-gating describe above.
+  beforeEach(() => {
+    vi.spyOn(transferManager, 'isBookUploadAllowed').mockReturnValue(true);
+  });
+
   test('quota 403 fails immediately with zero retries', async () => {
     const appService = makeAppService({
       uploadBook: vi.fn().mockRejectedValue(new Error('Insufficient storage quota')),

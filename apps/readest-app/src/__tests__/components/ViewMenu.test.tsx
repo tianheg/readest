@@ -214,6 +214,8 @@ describe('ViewMenu layout', () => {
       'Webtoon Mode',
       'hr',
     ]);
-    expect(seq[autoScroll + 6]).toBe('Sign in to Sync');
+    // Fork: with no provider rows the hook never shows the sign-in prompt, so
+    // the sync slot below Webtoon Mode reads "Never synced".
+    expect(seq[autoScroll + 6]).toBe('Never synced');
   });
 });
