@@ -16,8 +16,7 @@ import type { Book } from '@/types/book';
  *   - neither (not covered here; nothing runs)
  *
  * `isReadestCloudEnabled` and `getActiveFileSyncBackends` are settable per
- * test (unlike demo-books-sync.test.tsx, which hardcodes them to the one
- * scenario where none of these branches can be observed) so every path, plus
+ * test so every path, plus
  * the verbose-toast-fires-once invariant and the handleAutoSync mixed-fleet
  * probe gate, can actually be exercised.
  */
