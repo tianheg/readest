@@ -32,8 +32,6 @@ import { useFoliateEvents } from '../../hooks/useFoliateEvents';
 import { useRendererInputListeners } from '../../hooks/useRendererInputListeners';
 import { useBookOrbitNotesSync } from '../../hooks/useBookOrbitNotesSync';
 import { useNotesSync } from '../../hooks/useNotesSync';
-import { useReadwiseSync } from '../../hooks/useReadwiseSync';
-import { usePageboundSync } from '../../hooks/usePageboundSync';
 
 import { useTextSelector } from '../../hooks/useTextSelector';
 import { useSaveBooknoteNoteText } from '../../hooks/useSaveBooknoteNoteText';
@@ -156,8 +154,6 @@ const Annotator: React.FC<{ bookKey: string; contentInsets: Insets; gridInsets?:
 
   useNotesSync(bookKey);
   useBookOrbitNotesSync(bookKey);
-  useReadwiseSync(bookKey);
-  usePageboundSync(bookKey);
 
   useEffect(() => {
     void loadCustomDictionaries(envConfig).catch((error) => {

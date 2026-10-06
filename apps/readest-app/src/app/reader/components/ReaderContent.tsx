@@ -51,7 +51,6 @@ import LocalSendManager from '@/components/localsend/LocalSendManager';
 import BooksGrid from './BooksGrid';
 import SettingsDialog from '@/components/settings/SettingsDialog';
 import AudiobookPairingDialog from './audiobook/AudiobookPairingDialog';
-import PageboundLinkDialog from './pagebound/PageboundLinkDialog';
 import ModalPortal from '@/components/ModalPortal';
 import NotebookTransitionAlert from './notebook/NotebookTransitionAlert';
 
@@ -81,7 +80,6 @@ const ReaderContent: React.FC<{ ids?: string; settings: SystemSettings }> = ({ i
   const { isSettingsDialogOpen, settingsDialogBookKey } = useSettingsStore();
   const [showDetailsBook, setShowDetailsBook] = useState<Book | null>(null);
   const [audiobookBookKey, setAudiobookBookKey] = useState<string | null>(null);
-  const [pageboundLinkBookKey, setPageboundLinkBookKey] = useState<string | null>(null);
   const isInitiating = useRef(false);
   const [loading, setLoading] = useState(false);
   const [errorLoading, setErrorLoading] = useState(false);
@@ -160,15 +158,9 @@ const ReaderContent: React.FC<{ ids?: string; settings: SystemSettings }> = ({ i
       const detail = event.detail as { bookKey?: string } | undefined;
       if (detail?.bookKey) setAudiobookBookKey(detail.bookKey);
     };
-    const handleLinkPageboundBook = (event: CustomEvent) => {
-      const detail = event.detail as { bookKey?: string } | undefined;
-      if (detail?.bookKey) setPageboundLinkBookKey(detail.bookKey);
-    };
     eventDispatcher.on('manage-audiobook', handleManageAudiobook);
-    eventDispatcher.on('pagebound-link-book', handleLinkPageboundBook);
     return () => {
       eventDispatcher.off('manage-audiobook', handleManageAudiobook);
-      eventDispatcher.off('pagebound-link-book', handleLinkPageboundBook);
     };
   }, []);
 
@@ -418,12 +410,6 @@ const ReaderContent: React.FC<{ ids?: string; settings: SystemSettings }> = ({ i
           bookKey={audiobookBookKey}
           bookDoc={getBookData(audiobookBookKey)!.bookDoc!}
           onClose={() => setAudiobookBookKey(null)}
-        />
-      )}
-      {pageboundLinkBookKey && (
-        <PageboundLinkDialog
-          bookKey={pageboundLinkBookKey}
-          onClose={() => setPageboundLinkBookKey(null)}
         />
       )}
       <Notebook />
