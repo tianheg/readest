@@ -216,11 +216,6 @@ jobs:
             arch: x86_64
             rust_target: x86_64-pc-windows-msvc
             args: '--target x86_64-pc-windows-msvc --bundles nsis'
-          - os: windows-latest
-            release: windows
-            arch: aarch64
-            rust_target: aarch64-pc-windows-msvc
-            args: '--target aarch64-pc-windows-msvc --bundles nsis'
 
     runs-on: ${{ matrix.config.os }}
     # The Android build alone runs ~60min and its step is capped at 90 below;
