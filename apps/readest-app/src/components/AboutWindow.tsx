@@ -10,7 +10,6 @@ import { parseWebViewInfo } from '@/utils/ua';
 import { getAppVersion } from '@/utils/version';
 import { writeTextToClipboard } from '@/utils/clipboard';
 import { eventDispatcher } from '@/utils/event';
-import SupportLinks from './SupportLinks';
 import Dialog from './Dialog';
 import Link from './Link';
 
@@ -175,7 +174,6 @@ export const AboutWindow = () => {
             <p className='text-neutral-content text-sm'>
               © {new Date().getFullYear()} Bilingify LLC. All rights reserved.
             </p>
-
             <p className='text-neutral-content text-xs'>
               This software is licensed under the{' '}
               <Link
@@ -186,16 +184,8 @@ export const AboutWindow = () => {
               </Link>
               . You are free to use, modify, and distribute this software under the terms of the
               AGPL v3 license. Please see the license for more details.
-            </p>
-            <p className='text-neutral-content text-xs'>
-              Source code is available at{' '}
-              <Link href='https://github.com/readest/readest' className='text-blue-500 underline'>
-                GitHub
-              </Link>
-              .
-            </p>
+            </p>{' '}
           </div>
-          <SupportLinks />
         </div>
       )}
     </Dialog>
