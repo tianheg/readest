@@ -67,8 +67,7 @@ const serwist = new Serwist({
           url.hostname === 'fonts.gstatic.com' ||
           url.hostname === 'cdn.jsdelivr.net' ||
           url.hostname === 'cdnjs.cloudflare.com' ||
-          url.hostname === 'ik.imagekit.io' ||
-          url.hostname === 'db.onlinewebfonts.com';
+          url.hostname === 'ik.imagekit.io';
 
         return isFontFile || isFontRequest || isFontCDN;
       },

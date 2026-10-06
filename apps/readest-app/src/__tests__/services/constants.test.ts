@@ -189,7 +189,7 @@ describe('services/constants', () => {
 
     it('has expected keys with correct types', () => {
       expect(typeof DEFAULT_KOSYNC_SETTINGS.serverUrl).toBe('string');
-      expect(DEFAULT_KOSYNC_SETTINGS.serverUrl).toMatch(/^https?:\/\//);
+      expect(DEFAULT_KOSYNC_SETTINGS.serverUrl).toBe('');
       expect(typeof DEFAULT_KOSYNC_SETTINGS.username).toBe('string');
       expect(typeof DEFAULT_KOSYNC_SETTINGS.userkey).toBe('string');
       expect(typeof DEFAULT_KOSYNC_SETTINGS.deviceId).toBe('string');

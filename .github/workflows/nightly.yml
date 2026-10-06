@@ -271,15 +271,6 @@ jobs:
           pnpm tauri android build -t aarch64
           cp ${apk_path}/app-universal-release.apk $arm64_apk
 
-          # Sentry symbolicates Rust panics from these: the APK ships the
-          # library stripped (see gen/android/app/build.gradle.kts), while
-          # `target/` keeps the unstripped copy. Crash reporting must never
-          # fail a build, and forks have no token.
-          if [ -n "$SENTRY_AUTH_TOKEN" ]; then
-            pnpm exec sentry-cli debug-files upload --org readest --project readest \
-              ../../target/*/release/libreadestlib.so || echo "::warning::Sentry debug file upload failed"
-          fi
-
           pnpm tauri signer sign $universal_apk
           pnpm tauri signer sign $arm64_apk
 
