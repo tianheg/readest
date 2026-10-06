@@ -38,8 +38,8 @@ beforeAll(async () => {
 });
 afterEach(() => cleanup());
 
-// The container both DeleteConfirmAlert call sites (Bookshelf, BookDetailModal)
-// and the plain-Alert ones (StorageManager, ClipSignInAlert) render into.
+// The container the DeleteConfirmAlert call sites (Bookshelf, BookDetailModal)
+// render into.
 const AlertBar: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className='fixed bottom-0 left-0 right-0 z-50 flex justify-center'>{children}</div>
 );

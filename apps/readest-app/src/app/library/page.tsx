@@ -24,7 +24,7 @@ import { createThrottledCheckpoint } from '@/utils/checkpoint';
 import { DEFAULT_NEARBY_WORDS } from '@/utils/searchConfig';
 import { clearLibrarySearchHistory, loadLibrarySearchHistory } from './utils/searchHistory';
 import type { LibrarySearchTarget } from '@/types/book';
-import { navigateToLibrary, navigateToLogin, navigateToReader } from '@/utils/nav';
+import { navigateToLibrary, navigateToReader } from '@/utils/nav';
 import { splitLibraryOpenIds } from '@/utils/audiobook';
 import { listFormater } from '@/utils/book';
 import { getImportErrorMessage } from '@/services/errors';
@@ -32,7 +32,6 @@ import { ingestFile } from '@/services/ingestService';
 import { saveBookMetadataEdit } from '@/services/bookMetadataEdit';
 import { eventDispatcher } from '@/utils/event';
 import { transferManager } from '@/services/transferManager';
-import { purgeCloudBookData } from '@/services/purgeCloudBookData';
 import { isReadestCloudStorageActive } from '@/services/sync/cloudSyncProvider';
 import { getFilename, getFolderImportGroupName, joinScannedPath } from '@/utils/path';
 import { parseOpenWithFiles } from '@/helpers/openWith';
@@ -41,7 +40,6 @@ import { impactFeedback } from '@tauri-apps/plugin-haptics';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
 
 import { useEnv } from '@/context/EnvContext';
-import { useAuth } from '@/context/AuthContext';
 import { useThemeStore } from '@/store/themeStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLibraryStore } from '@/store/libraryStore';
@@ -55,7 +53,6 @@ import { useLibraryFileSync } from './hooks/useLibraryFileSync';
 import { useBookTransferActions } from './hooks/useBookTransferActions';
 import { useAbsOfflineDownload } from './hooks/useAbsOfflineDownload';
 import { useAutoImportFolders } from './hooks/useAutoImportFolders';
-import { useInboxDrainer } from '@/hooks/useInboxDrainer';
 import { useOPDSSubscriptions } from '@/hooks/useOPDSSubscriptions';
 import { useABSSync } from '@/hooks/useABSSync';
 import { useBookDataStore } from '@/store/bookDataStore';
@@ -68,7 +65,6 @@ import { useOpenLaunchLinks } from '@/hooks/useOpenLaunchLinks';
 import { useHomeScreenWidgets } from '@/hooks/useHomeScreenWidgets';
 import { useOpenShareLink } from '@/hooks/useOpenShareLink';
 import { useOpenDeviceLink } from '@/hooks/useOpenDeviceLink';
-import { useClipUrlIngress } from '@/hooks/useClipUrlIngress';
 import { useWebBrowserDownloads } from '@/hooks/useWebBrowserDownloads';
 import { useKeyDownActions } from '@/hooks/useKeyDownActions';
 import { SelectedFile, useFileSelector } from '@/hooks/useFileSelector';
@@ -118,7 +114,6 @@ import ImportNovelDialog from './components/ImportNovelDialog';
 import NowPlayingBar from './components/NowPlayingBar';
 import { convertToEpubWithWorker } from '@/services/send/conversion/conversionWorker';
 import type { WebBrowserPage } from '@/services/webBrowser/webBrowser';
-import ClipSignInAlert from '@/components/ClipSignInAlert';
 import useShortcuts from '@/hooks/useShortcuts';
 import { useReplicaPull } from '@/hooks/useReplicaPull';
 import { useCustomFonts } from '@/hooks/useCustomFonts';
@@ -205,7 +200,6 @@ const LibraryPageWithSearchParams = () => {
 const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchParams | null }) => {
   const router = useAppRouter();
   const { envConfig, appService } = useEnv();
-  const { token, user } = useAuth();
   const {
     library: libraryBooks,
     libraryLoaded: libraryLoadedFromDisk,
@@ -383,7 +377,6 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
   useHomeScreenWidgets();
   useOpenShareLink();
   useOpenDeviceLink();
-  useClipUrlIngress();
   useWebBrowserDownloads();
   useTransferQueue(libraryLoaded);
 
@@ -394,24 +387,15 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
   useLibraryFileSync();
   const { checkOPDSSubscriptions } = useOPDSSubscriptions();
   useABSSync();
-  useInboxDrainer();
   const { isDragging } = useDragDropImport();
 
   usePullToRefresh(
     scrollRef,
     async () => {
-      if (!user) {
-        navigateToLogin(router);
-        return;
-      }
       await pullLibrary(false, true);
       checkOPDSSubscriptions(true);
     },
     async () => {
-      if (!user) {
-        navigateToLogin(router);
-        return;
-      }
       await pullLibrary(true, true);
       checkOPDSSubscriptions(true);
     },
@@ -604,9 +588,9 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
               file,
               books: libraryBooks,
               transient: temp,
-              forceUpload: !!appService.isMobile && !!user,
+              forceUpload: false,
             },
-            { appService, settings, isLoggedIn: !!user },
+            { appService, settings, isLoggedIn: false },
           );
           if (book) {
             bookIds.push(book.hash);
@@ -717,20 +701,6 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
     if (isInitiating.current) return;
     isInitiating.current = true;
 
-    const initLogin = async () => {
-      const appService = await envConfig.getAppService();
-      const settings = await appService.loadSettings();
-      if (token && user) {
-        if (!settings.keepLogin) {
-          settings.keepLogin = true;
-          setSettings(settings);
-          saveSettings(envConfig, settings);
-        }
-      } else if (settings.keepLogin) {
-        router.push('/auth');
-      }
-    };
-
     // Reuse the in-store library only when it was actually loaded from disk.
     // Gating on `length > 0` was unsafe: a transient "Open with" entry made the
     // store non-empty before any disk load, so this skipped loadLibraryBooks and
@@ -821,7 +791,6 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
       });
     };
 
-    initLogin().catch((error) => console.error('Failed to initialize login:', error));
     initLibrary().catch(recoverFromInitFailure);
     return () => {
       setCheckOpenWithBooks(false);
@@ -977,7 +946,7 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
             groupId: resolvedGroupId,
             groupName: resolvedGroupName,
           },
-          { appService, settings: liveSettings, isLoggedIn: !!user, appBooksPrefix },
+          { appService, settings: liveSettings, isLoggedIn: false, appBooksPrefix },
         );
         if (!book) return null;
         successfulImports.push(book.title);
@@ -1163,10 +1132,6 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
         // Purge also erases the book's synced progress and notes, or the next
         // open pulls them straight back (#6532). It runs first: if the network
         // step fails, nothing irreversible has happened locally yet.
-        if (deleteAction === 'purge' && user) {
-          await purgeCloudBookData(book.hash);
-        }
-
         // Handle local deletion immediately. Purge mirrors 'both' (tombstone +
         // queued cloud delete) but hands 'purge' to deleteBook, which also wipes
         // the entire Books/<hash>/ folder (config/nav/cover) — issue #4615.
@@ -1262,7 +1227,7 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
   }, []);
 
   const handleUpdateMetadata = (book: Book, metadata: BookMetadata, tags: string[]) =>
-    saveBookMetadataEdit(envConfig, book, metadata, tags, !!user);
+    saveBookMetadataEdit(envConfig, book, metadata, tags, false);
 
   const handleMetadataValueClick = (type: 'tag' | 'subject', value: string) => {
     const groupBy = type === 'tag' ? LibraryGroupByType.Tag : LibraryGroupByType.Subject;
@@ -2175,7 +2140,6 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
         onClose={() => setShowImportNovel(false)}
         onImport={handleImportNovelFile}
       />
-      <ClipSignInAlert />
       <Toast />
     </div>
   );
