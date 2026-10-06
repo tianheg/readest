@@ -8,7 +8,6 @@ import {
   RiBookReadLine,
   RiBook3Line,
   RiBookmark3Line,
-  RiFileList3Line,
   RiDiscordLine,
   RiSendPlaneLine,
   RiWifiLine,
@@ -52,7 +51,7 @@ import KOSyncForm from './integrations/KOSyncForm';
 import ReadwiseForm from './integrations/ReadwiseForm';
 import HardcoverForm from './integrations/HardcoverForm';
 import PageboundForm from './integrations/PageboundForm';
-import NotionForm from './integrations/NotionForm';
+
 import SendToReadestForm from './integrations/SendToReadestForm';
 import LocalSendForm from './integrations/LocalSendForm';
 import WebDAVForm from './integrations/WebDAVForm';
@@ -91,7 +90,6 @@ type SubPage =
   | 'readwise'
   | 'hardcover'
   | 'pagebound'
-  | 'notion'
   | 'opds'
   | 'audiobookshelf'
   | 'send'
@@ -237,7 +235,6 @@ const IntegrationsPanel: React.FC = () => {
       requestedSubPage === 'readwise' ||
       requestedSubPage === 'hardcover' ||
       requestedSubPage === 'pagebound' ||
-      requestedSubPage === 'notion' ||
       requestedSubPage === 'opds' ||
       requestedSubPage === 'audiobookshelf' ||
       requestedSubPage === 'send' ||
@@ -473,12 +470,6 @@ const IntegrationsPanel: React.FC = () => {
         <PageboundForm onBack={() => setSubPage(null)} />
       </div>
     );
-  if (subPage === 'notion')
-    return (
-      <div className='my-4 w-full'>
-        <NotionForm onBack={() => setSubPage(null)} />
-      </div>
-    );
   if (subPage === 'opds')
     return (
       <div className='my-4 w-full'>
@@ -520,10 +511,6 @@ const IntegrationsPanel: React.FC = () => {
   const hardcoverStatus = settings.hardcover?.enabled ? _('Connected') : _('Not connected');
   const pageboundStatus =
     settings.pagebound?.enabled && settings.pagebound.refreshToken
-      ? _('Connected')
-      : _('Not connected');
-  const notionStatus =
-    settings.notion?.enabled && settings.notion.accessToken && settings.notion.databaseId
       ? _('Connected')
       : _('Not connected');
 
@@ -693,12 +680,6 @@ const IntegrationsPanel: React.FC = () => {
                 onClick={() => setSubPage('pagebound')}
               />
             )}
-            <IntegrationRow
-              icon={RiFileList3Line}
-              title={_('Notion')}
-              status={notionStatus}
-              onClick={() => setSubPage('notion')}
-            />
           </div>
         </div>
       </div>

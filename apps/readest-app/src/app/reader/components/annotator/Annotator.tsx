@@ -35,7 +35,7 @@ import { useNotesSync } from '../../hooks/useNotesSync';
 import { useReadwiseSync } from '../../hooks/useReadwiseSync';
 import { useHardcoverSync } from '../../hooks/useHardcoverSync';
 import { usePageboundSync } from '../../hooks/usePageboundSync';
-import { useNotionSync } from '../../hooks/useNotionSync';
+
 import { useTextSelector } from '../../hooks/useTextSelector';
 import { useSaveBooknoteNoteText } from '../../hooks/useSaveBooknoteNoteText';
 import { placeToolbar, Point, Position, Rect, TextSelection } from '@/utils/sel';
@@ -160,7 +160,6 @@ const Annotator: React.FC<{ bookKey: string; contentInsets: Insets; gridInsets?:
   useReadwiseSync(bookKey);
   useHardcoverSync(bookKey);
   usePageboundSync(bookKey);
-  useNotionSync(bookKey);
 
   useEffect(() => {
     void loadCustomDictionaries(envConfig).catch((error) => {
