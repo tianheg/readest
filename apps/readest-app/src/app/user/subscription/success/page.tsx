@@ -429,11 +429,6 @@ const SuccessPageWithSearchParams = () => {
             {_('Back to Profile')}
           </button>
         </div>
-
-        {/* Additional Info */}
-        <div className='mt-8 text-xs text-gray-500'>
-          <p>{_('Need help? Contact our support team at support@readest.com')}</p>
-        </div>
       </div>
     </div>
   );
