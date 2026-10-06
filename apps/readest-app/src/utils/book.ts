@@ -249,9 +249,8 @@ export interface BookGroupFields {
 }
 
 /**
- * Field-level last-writer-wins for group membership (issue #5911), the client
- * mirror of `resolveGroupMerge` in `pages/api/sync.ts`. Shared by the native
- * cloud merge (`useBooksSync`) and the third-party file-sync merge
+ * Field-level last-writer-wins for group membership (issue #5911). Shared by
+ * the native cloud merge (`useBooksSync`) and the third-party file-sync merge
  * (`services/sync/file/merge.ts`) so both backends resolve a group the same way.
  *
  * Group membership used to ride the row's `updatedAt`, which is stamped by

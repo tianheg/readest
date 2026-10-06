@@ -902,9 +902,9 @@ export const READEST_UPDATER_PUBKEY =
   'dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEJFMEQ1QjE2OEU1NEIzNTEKUldSUnMxU09GbHNOdmpEaWFMT1crRFpEV2VORzQ2MklxaFc0M1R0ci9xY2c1bENXS0xhM1R1L2sK';
 
 // Fork: no Readest storage/asset CDN (same treatment as LATEST_DOWNLOAD_
-// BASE_URL above). Both bases feed only pages/api/storage/upload.ts, whose
-// Supabase-backed admin client now points at the unreachable stub — the route
-// can never mint a URL any more, so blank the hosts instead of shipping them.
+// BASE_URL above). The only consumer was pages/api/storage/upload.ts, which
+// this fork removed outright, so nothing can mint a URL any more — blank the
+// hosts instead of shipping them.
 export const READEST_PUBLIC_STORAGE_BASE_URL = '';
 // Deployments wanting public media links re-point this at their own origin
 // (upstream comment: custom domain serving the readest-public bucket, durable
