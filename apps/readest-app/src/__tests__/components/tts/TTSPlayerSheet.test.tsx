@@ -1,5 +1,11 @@
 import React from 'react';
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi, afterAll } from 'vitest';
+
+// Fork: self-hosted defaults on, which would open the TTS-cache gate and
+// mask this file's keep-locked assertions — pin the deployment to its
+// opt-out (fork default pinned in customization-access.test.ts).
+vi.stubEnv('SELF_HOSTED', 'false');
+afterAll(() => vi.unstubAllEnvs());
 import {
   cleanup,
   fireEvent,

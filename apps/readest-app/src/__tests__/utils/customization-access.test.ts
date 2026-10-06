@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { jwtDecode } from 'jwt-decode';
 import {
   getCustomizationPurchased,
@@ -25,6 +25,12 @@ describe('getCustomizationPurchased', () => {
 });
 
 describe('isCustomizationAllowed', () => {
+  // Fork: self-hosted reads on by default, which would mask every entitlement
+  // branch below — pin the deployment to its opt-out so plan/purchase logic
+  // stays observable; the self-hosted describe flips it back on.
+  beforeEach(() => vi.stubEnv('SELF_HOSTED', 'false'));
+  afterEach(() => vi.unstubAllEnvs());
+
   it('allows an explicit purchase on any plan', () => {
     expect(isCustomizationAllowed('free', true)).toBe(true);
   });
@@ -53,7 +59,20 @@ describe('self-hosted deployments', () => {
     vi.unstubAllEnvs();
   });
 
-  it('is off by default', () => {
+  // Fork: self-hosted defaults ON — this build has no store or paywall, so a
+  // deployment where nobody set any variable still unlocks everything.
+  it('is on by default', () => {
+    expect(isSelfHosted()).toBe(true);
+  });
+
+  // The only escape hatch: an explicit 'false' at either layer.
+  it('honors an explicit SELF_HOSTED=false opt-out', () => {
+    vi.stubEnv('SELF_HOSTED', 'false');
+    expect(isSelfHosted()).toBe(false);
+  });
+
+  it('honors an explicit NEXT_PUBLIC_SELF_HOSTED=false opt-out', () => {
+    vi.stubEnv('NEXT_PUBLIC_SELF_HOSTED', 'false');
     expect(isSelfHosted()).toBe(false);
   });
 
@@ -67,8 +86,8 @@ describe('self-hosted deployments', () => {
     expect(isCustomizationAllowed('free', false)).toBe(true);
   });
 
-  // `??` stops at an empty string, so a blank SELF_HOSTED would mask the
-  // public variable and silently re-lock a self-hosted deployment.
+  // A blank SELF_HOSTED must never carry the opt-out: `||` advances past the
+  // empty string to the public variable (and the fork default beyond it).
   it('falls through an explicitly empty SELF_HOSTED', () => {
     vi.stubEnv('SELF_HOSTED', '');
     vi.stubEnv('NEXT_PUBLIC_SELF_HOSTED', 'true');
@@ -80,6 +99,9 @@ describe('self-hosted deployments', () => {
 // The reader decides from the session token alone, so a signed-out reader is
 // locked unless the deployment is self-hosted.
 describe('isCustomTranslatorAllowed', () => {
+  // Fork: same opt-out pin as isCustomizationAllowed — keep the plan logic
+  // observable while self-hosted defaults on.
+  beforeEach(() => vi.stubEnv('SELF_HOSTED', 'false'));
   afterEach(() => {
     vi.unstubAllEnvs();
   });
@@ -104,6 +126,9 @@ describe('isCustomTranslatorAllowed', () => {
   });
 
   it('allows a signed-out reader on a self-hosted deployment', () => {
+    // Drop the describe's opt-out pin first — a blank SELF_HOSTED falls
+    // through to the public variable below.
+    vi.unstubAllEnvs();
     vi.stubEnv('NEXT_PUBLIC_SELF_HOSTED', 'true');
     expect(isCustomTranslatorAllowed(null)).toBe(true);
   });

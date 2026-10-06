@@ -10,7 +10,13 @@
  * The switch must follow the toolbar's rule: off + unavailable => locked, but
  * an already-on book stays toggleable so the user can turn it back off.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, afterAll } from 'vitest';
+
+// Fork: self-hosted defaults on, which would open the custom-translator gate
+// and mask this file's keep-locked assertions — pin the deployment to its
+// opt-out (fork default pinned in customization-access.test.ts).
+vi.stubEnv('SELF_HOSTED', 'false');
+afterAll(() => vi.unstubAllEnvs());
 import { render, cleanup, screen, fireEvent } from '@testing-library/react';
 
 import LangPanel from '@/components/settings/LangPanel';

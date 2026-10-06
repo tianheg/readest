@@ -36,9 +36,10 @@ export const getServerRuntimeConfig = (): ReadestRuntimeConfig => ({
     process.env['OBJECT_STORAGE_TYPE'] ?? process.env['NEXT_PUBLIC_OBJECT_STORAGE_TYPE'],
   // A self-hosted deployment unlocks every premium feature: there is no store
   // to buy from, and the operator already runs the infrastructure the paywall
-  // funds.
+  // funds. Fork: defaults ON — this build is self-hosted by definition;
+  // SELF_HOSTED=false is the explicit opt-out at either layer.
   selfHosted:
-    (process.env['SELF_HOSTED'] || process.env['NEXT_PUBLIC_SELF_HOSTED']) === 'true' || undefined,
+    (process.env['SELF_HOSTED'] || process.env['NEXT_PUBLIC_SELF_HOSTED'] || 'true') !== 'false',
   storageFixedQuota: (() => {
     const raw =
       process.env['STORAGE_FIXED_QUOTA'] ?? process.env['NEXT_PUBLIC_STORAGE_FIXED_QUOTA'];

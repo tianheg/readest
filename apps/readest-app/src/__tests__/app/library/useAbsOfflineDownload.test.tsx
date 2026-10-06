@@ -1,4 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi, afterAll } from 'vitest';
+
+// Fork: self-hosted defaults on, which would open the ABS-offline gate and
+// mask this file's keep-locked assertions — pin the deployment to its
+// opt-out (fork default pinned in customization-access.test.ts).
+vi.stubEnv('SELF_HOSTED', 'false');
+afterAll(() => vi.unstubAllEnvs());
 import { renderHook } from '@testing-library/react';
 
 import type { Book } from '@/types/book';

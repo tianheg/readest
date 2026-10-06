@@ -1,4 +1,10 @@
-import { describe, test, expect, beforeEach, vi } from 'vitest';
+import { describe, test, expect, beforeEach, vi, afterAll } from 'vitest';
+
+// Fork: self-hosted defaults on, which would stop the plan gate from pausing
+// third-party sync and mask this file's keep-paused assertions — pin the
+// deployment to its opt-out (fork default pinned in customization-access.test.ts).
+vi.stubEnv('SELF_HOSTED', 'false');
+afterAll(() => vi.unstubAllEnvs());
 import { useSettingsStore } from '@/store/settingsStore';
 import { setCachedUserPlan } from '@/services/sync/cloudSyncProvider';
 import { useLibraryStore } from '@/store/libraryStore';

@@ -1,4 +1,10 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, afterAll } from 'vitest';
+
+// Fork: self-hosted defaults on, which would open the nearby-pairing gate and
+// mask this file's keep-locked assertions — pin the deployment to its
+// opt-out (fork default pinned in customization-access.test.ts).
+vi.stubEnv('SELF_HOSTED', 'false');
+afterAll(() => vi.unstubAllEnvs());
 import { render, cleanup, screen } from '@testing-library/react';
 
 /**

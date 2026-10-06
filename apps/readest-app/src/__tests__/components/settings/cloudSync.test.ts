@@ -1,4 +1,11 @@
-import { describe, expect, test, vi, beforeEach } from 'vitest';
+import { describe, expect, test, vi, beforeEach, afterAll } from 'vitest';
+
+// Fork: self-hosted defaults on, which would open every premium gate and
+// mask this file's plan checks — pin the deployment to its opt-out so the
+// gate logic stays observable (the fork default itself is pinned in
+// customization-access.test.ts).
+vi.stubEnv('SELF_HOSTED', 'false');
+afterAll(() => vi.unstubAllEnvs());
 
 vi.mock('@/utils/settingsSync', () => ({
   broadcastGlobalSettings: vi.fn(),

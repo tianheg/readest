@@ -170,11 +170,17 @@ export const PREMIUM_PLANS: readonly UserPlan[] = ['plus', 'pro'];
  * the browser, and straight from the environment on the server where the
  * window-injected config does not exist.
  */
-export const isSelfHosted = (): boolean =>
-  getRuntimeConfig()?.selfHosted === true ||
-  // `??` would stop at an empty string, so an explicitly blank SELF_HOSTED
-  // would mask NEXT_PUBLIC_SELF_HOSTED. `||` falls through on empty too.
-  (process.env['SELF_HOSTED'] || process.env['NEXT_PUBLIC_SELF_HOSTED']) === 'true';
+export const isSelfHosted = (): boolean => {
+  // Fork: a deployment of this build is self-hosted by definition — premium
+  // gates read on by default. Each layer keeps an explicit opt-out with
+  // SELF_HOSTED=false: the browser-side injected config (served from the
+  // server's live env) and the raw server environment alike. `|| 'true'` keeps
+  // a blank variable from masking as an opt-out (same spirit as the old `||`
+  // fallthrough, inverted to default-on).
+  const env = process.env['SELF_HOSTED'] || process.env['NEXT_PUBLIC_SELF_HOSTED'] || 'true';
+  if (env === 'false') return false;
+  return getRuntimeConfig()?.selfHosted !== false;
+};
 
 /**
  * The single gate for premium features: a self-hosted deployment, a paid
