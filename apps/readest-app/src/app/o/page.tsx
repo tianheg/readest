@@ -129,9 +129,6 @@ const OpenAnnotationLanding = () => {
                 'The annotation link is missing required information. The original link may have been truncated.',
               )}
             </p>
-            <a href='https://readest.com' className='btn btn-ghost btn-block mt-6' rel='noopener'>
-              {_('Go to Readest')}
-            </a>
           </div>
         </Card>
         <PageFooter tagline={_('Open-source ebook reader for everyone, on every device.')} />

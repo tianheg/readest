@@ -11,7 +11,6 @@ import { getAppVersion } from '@/utils/version';
 import { writeTextToClipboard } from '@/utils/clipboard';
 import { eventDispatcher } from '@/utils/event';
 import SupportLinks from './SupportLinks';
-import LegalLinks from './LegalLinks';
 import Dialog from './Dialog';
 import Link from './Link';
 
@@ -195,8 +194,6 @@ export const AboutWindow = () => {
               </Link>
               .
             </p>
-
-            <LegalLinks />
           </div>
           <SupportLinks />
         </div>

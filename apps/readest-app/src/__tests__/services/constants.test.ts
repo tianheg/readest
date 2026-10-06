@@ -885,8 +885,8 @@ describe('services/constants', () => {
       expect(BOOK_IDS_SEPARATOR.length).toBe(1);
     });
 
-    it('DOWNLOAD_READEST_URL is a valid URL', () => {
-      expect(DOWNLOAD_READEST_URL).toMatch(/^https:\/\//);
+    it('DOWNLOAD_READEST_URL is blank (fork has no vendor download promo)', () => {
+      expect(DOWNLOAD_READEST_URL).toBe('');
     });
 
     it('READEST_WEB_BASE_URL is a valid URL', () => {
