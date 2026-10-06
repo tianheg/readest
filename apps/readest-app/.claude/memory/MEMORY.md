@@ -96,11 +96,9 @@ Index only — one line per memory. Detail lives in the topic files; do not rest
 - [arm64 APK 90MB->57MB](android-apk-size-strip-lto-6368.md) MERGED #6368 (8750c3104) UNRELEASED; AGP strip leaves `.symtab` (22MB); NO `[profile.release]` existed, `codegen-units=1` is the WHOLE win (LTO buys nothing); `android.ndkDirectory` THROWS here; tauri embeds ALL of `out/` (jieba 2x, turso wasm unused); ANY alias into `public/` double-ships (jieba+simplecc+pdf.min.mjs); strip pays ONLY on Android (APK stores .so uncompressed, DMG compresses: 4.8MB->1.4MB); jieba fetch CDP-VERIFIED; MIUI blocks adb installs
 - [TypeScript 7 upgrade #5260](typescript-7-upgrade-5260.md) MERGED #5893; no tsserver/tsgo (lint = `tsc`); next 16.3.3; rootDir fix
 - [setup-android installs the removed `tools` pkg](setup-android-legacy-tools-package.md) MERGED #6238; SDK repo dropped `tools`, action default still asks for it; pin `packages: 'platform-tools'`
-- [Nix FOD hash staleness](nix-fod-hash-staleness.md) new crates need Cargo.cef.lock too (fod-hashes can't see it); MERGED #5779; hash from the PR check's `got:` line, NEVER docker/OrbStack; `--keep-going` since #6081; PR head may be chrox/readest-app (remote `chrox`)
 - [git push needs the SOCKS proxy](git-push-socks-proxy.md) ssh ProxyCommand only; `--no-verify` + ServerAliveInterval
 - [worktree:new REBASES a PR branch](worktree-new-rebases-pr-force-push.md) pushing to a fork from it = FORCE push; use the real head
 - [Workflow-file pushes need SSH](push-workflow-file-needs-ssh-not-gh-oauth.md) gh OAuth lacks `workflow` scope
-- [#5732 nix android AVD ABI on Apple Silicon](nix-android-avd-abi-5732.md) MERGED #5850; M-series verify pending
 - [Store listings in fastlane](store-listings-fastlane-5573.md) MERGED #5573; readest-promotions NOT live
 - Stable recipes → [Build & CI Recipes](build-ci-recipes.md)
 

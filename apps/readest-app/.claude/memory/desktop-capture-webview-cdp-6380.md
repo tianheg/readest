@@ -15,6 +15,6 @@ Fix (MERGED #6506 (6bcd170de) 2026-09-30, worktree + branch removed; CodeRabbit 
 Verified facts: with a REAL HiDPI surface, clip `scale: 1` already gives device pixels (scale=dpr would be 4×); headless DPR emulation misreports CSS size. JPEG ~35 ms vs PNG ~86 ms per full cell.
 
 **Why:** no Windows/Linux device run yet; the CEF path is only partly compiled (full cross-build dies on GTK sys crates on Mac; `cef` `dox` feature lets a scratch crate type-check the observer code).
-**How to apply:** CEF check needs Rust ≥1.95 (installed side by side as `+1.95`). `try-appimage.yml` (workflow_dispatch) is the full CEF compile. Expect a cargoHash bump from fod-hashes ([[nix-fod-hash-staleness]]).
+**How to apply:** CEF check needs Rust ≥1.95 (installed side by side as `+1.95`). `try-appimage.yml` (workflow_dispatch) is the full CEF compile. Expect a cargoHash bump from fod-hashes (fod-hashes).
 
 **Follow-up 2026-09-30 (MERGED #6509 (6e567ef31)):** with the sidebar open every turn flashed left over a black right strip = sidebar width. Cause (Chromium `page_handler.cc` CaptureScreenshot): a `clip` sets emulation `viewport_offset = clip.xy` AND `GetView()->SetSize(clip size)` on the LIVE view, restored after capture. Never pass `clip` on a visible window. Fix = no clip (no emulation path), bridge.ts crops at decode via `createImageBitmap(blob, rect*dpr)` on windows/linux; host `capture` now returns `ArrayBuffer | ImageBitmap`. Rust crop rejected: `image` jpeg decode+crop+re-encode = ~75 ms/turn on M-series.

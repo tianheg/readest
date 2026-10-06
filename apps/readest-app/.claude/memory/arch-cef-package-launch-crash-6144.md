@@ -54,5 +54,5 @@ AVX2), and the base image lacks CEF's libs (install nss nspr libxkbcommon
 alsa-lib libcups libdrm mesa at-spi2-core libxcomposite libxdamage libxrandr
 libxfixes expat systemd-libs). Launch with `Xvfb :99` + `dbus-run-session`;
 `timeout` exit 124 = still alive. The container and archlinux image were removed after the session; rebuild
-from this recipe. Related: [[nix-android-avd-abi-5732]],
+from this recipe. Related: nix-android-avd note,
 [[selfhosted-docker-6091-6093]].

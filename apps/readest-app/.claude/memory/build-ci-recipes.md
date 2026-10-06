@@ -31,7 +31,6 @@ Moved from MEMORY.md to keep the index small. One line per memory; open the link
 - [tauri 2.11 remote ACL app commands](tauri-211-remote-acl-app-commands.md) webdriver = remote origin
 - [Kotlin never compiled in CI](android-kotlin-unit-test-gradle-recipe.md) compile plugin Kotlin locally via gen/android gradlew
 - [#5550 docker never applied migrations](docker-selfhost-migrations-never-applied-5550.md) MERGED #5551; dir mount shadows core schema
-- [PR #5605 nix packaging review](nix-packaging-pr-5605.md) 2 blockers posted; readest ALREADY in nixpkgs — cachix = CI-only
 - test-tauri.sh webdriver bogus timeout MERGED #5644: WEBDRIVER_TIMEOUT=900 + build_tauri_app gated on tauri paths
 - [Kindle SSH deploy+debug recipe](kindle-ssh-deploy-debug-recipe.md) 192.168.2.180:2222 blank-pw askpass; crash.log silent for sync
 - [Turbopack dev stale chunk phantom](turbopack-dev-stale-chunk-phantom.md) rm -rf .next first · [Concurrent sessions share .next/out](concurrent-sessions-share-next-out-dir.md) check `ps` first

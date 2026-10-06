@@ -102,13 +102,12 @@ superproject ref still pins; tag it first. `.gitmodules` pins no branch. CLAUDE.
   swap + `cargo metadata --config .cargo/cef.toml` from src-tauri (MINIMAL
   resolve); never bare `cargo update` there, the feat/cef plugin patches are
   version-pinned and a newer crates.io release silently drops them.
-- Cargo.lock changed a lot (fork crates' dev-deps left the lock); expect the
-  Nix FOD hash to need refreshing, see [[nix-fod-hash-staleness]].
+- Cargo.lock changed a lot (fork crates' dev-deps left the lock);
 
 Outcome: shipped as PR #6081 "chore: bump tauri to version 2.11.5" (head on the
 `chrox/readest-app` fork, squash-merged ee86510cc 2026-09-05T20:32Z) after two
 CI fixes: cargoHash + pnpmDeps hash bumps and the `as_chunks` clippy rewrite in
-epub_parser.rs. Main then took #6083 (nix Linux package on CEF). The temporary
+epub_parser.rs. Main then took #6083. The temporary
 fork tag `cef-stub-old-base` was DELETED once main pinned 3156d92b7; the
 leftover `packages/tauri-plugins/` dir is gone. `packages/tao` was removed by
 PR #6085. The iOS 18.5 simulator build and CarPlay check passed as recorded above;

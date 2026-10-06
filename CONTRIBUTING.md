@@ -58,25 +58,6 @@ This command will display information about the installed Tauri dependencies and
 
 For Windows targets, “Build Tools for Visual Studio 2022” (or a higher edition of Visual Studio) and the “Desktop development with C++” workflow must be installed. For Windows ARM64 targets, the “VS 2022 C++ ARM64 build tools” and "C++ Clang Compiler for Windows" components must be installed. And make sure `clang` can be found in the path by adding `C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\x64\bin` for example in the environment variable `Path`.
 
-#### Using Nix
-
-If you have Nix installed, you can leverage the included flake to enter a
-development shell to install and run all the necessary dependencies and commands.
-Run these from the repository root, where `flake.nix` lives:
-
-```bash
-nix develop           # enter a dev shell for the web and desktop app
-nix develop .#android # enter a dev shell for the android app
-nix develop .#ios     # enter a dev shell for the ios app (macOS only)
-```
-
-Then, simply run:
-
-```bash
-# copy vendors dist libs to public directory
-pnpm --filter @readest/readest-app setup-vendors
-```
-
 ### 4. Build for Development
 
 ```bash
@@ -90,7 +71,7 @@ pnpm preview
 
 #### Android
 
-The following must be run once before running the Android app. Note that this is done automatically if using the nix Android devshell:
+The following must be run once before running the Android app:
 
 ```bash
 rm apps/readest-app/src-tauri/gen/android

@@ -119,7 +119,7 @@ module-private (no window shortcut for manage-audiobook/tts-speak).
 **PR follow-ups 2026-08-25:** `50d57e30d` bumped `nix/package.nix` cargoHash to
 `sha256-a3KVOqYsO1LQF1D0Maxrq9MsLgjYQFgyU0oemn4Xkn0=` (Cargo.lock gained
 image-webp; fod-hashes check printed the `got:` value, per
-[[nix-fod-hash-staleness]]) -> check PASSES. `a3d60d3ad` reworded docs +
+fod-hashes) -> check PASSES. `a3d60d3ad` reworded docs +
 TTSController comments + PR body to "reachable audiobook chapters" (review
 note: narratedAudioChapters excludes audio before the first mapped chapter, so
 "the audiobook's own chapter list" contradicted the doc).
