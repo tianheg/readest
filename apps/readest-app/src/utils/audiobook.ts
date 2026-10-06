@@ -14,9 +14,7 @@ export const isAudiobook = (book: {
   format: Book['format'];
   metadata?: Book['metadata'];
 }): boolean =>
-  book.format === 'OPDSAUDIO' ||
-  book.format === 'BOOKORBIT' ||
-  (book.format === 'ABS' && book.metadata?.absMediaType !== 'ebook');
+  book.format === 'OPDSAUDIO' || (book.format === 'ABS' && book.metadata?.absMediaType !== 'ebook');
 
 /** True when `book` is an ebook streamed from an Audiobookshelf server. */
 export const isAbsEbook = (book: {

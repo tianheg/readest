@@ -18,20 +18,13 @@ import {
   WordLensConfig,
 } from '@/types/book';
 import {
-  HardcoverSettings,
-  PageboundSettings,
-  BookOrbitSettings,
   KOSyncSettings,
   LibraryGroupByType,
   LibrarySortByType,
-  NotionSettings,
   ReadSettings,
-  ReadwiseSettings,
   SystemSettings,
   WebDAVSettings,
-  GoogleDriveSettings,
   S3Settings,
-  OneDriveSettings,
   ICloudSettings,
 } from '@/types/settings';
 import { UserStorageQuota, UserDailyTranslationQuota } from '@/types/quota';
@@ -87,57 +80,6 @@ export const DEFAULT_KOSYNC_SETTINGS = {
   enabled: false,
 } as KOSyncSettings;
 
-export const DEFAULT_BOOKORBIT_SETTINGS = {
-  enabled: false,
-  serverUrl: '',
-  username: '',
-  userkey: '',
-  deviceId: '',
-  deviceName: '',
-  strategy: 'prompt',
-  syncProgress: true,
-  syncNotes: true,
-  syncStats: true,
-  syncBookStates: true,
-  autoSync: true,
-} as BookOrbitSettings;
-
-export const READWISE_API_BASE_URL = 'https://readwise.io/api/v2';
-
-export const DEFAULT_READWISE_SETTINGS = {
-  enabled: false,
-  accessToken: '',
-  lastSyncedAt: 0,
-  includeCoverImage: true,
-} as ReadwiseSettings;
-
-export const DEFAULT_HARDCOVER_SETTINGS = {
-  enabled: false,
-  accessToken: '',
-  lastSyncedAt: 0,
-  autoSync: false,
-} as HardcoverSettings;
-
-export const DEFAULT_PAGEBOUND_SETTINGS = {
-  enabled: false,
-  email: '',
-  refreshToken: '',
-  apiToken: '',
-  lastSyncedAt: 0,
-  autoSync: false,
-} as PageboundSettings;
-
-export const NOTION_API_BASE_URL = 'https://api.notion.com/v1';
-export const NOTION_API_VERSION = '2026-03-11';
-
-export const DEFAULT_NOTION_SETTINGS = {
-  enabled: false,
-  accessToken: '',
-  databaseId: '',
-  lastSyncedAt: 0,
-  includeChapterHeading: true,
-} as NotionSettings;
-
 export const DEFAULT_WEBDAV_SETTINGS = {
   enabled: false,
   serverUrl: '',
@@ -151,16 +93,6 @@ export const DEFAULT_WEBDAV_SETTINGS = {
   deviceId: '',
   lastSyncedAt: 0,
 } as WebDAVSettings;
-
-export const DEFAULT_GOOGLE_DRIVE_SETTINGS = {
-  enabled: false,
-  syncProgress: true,
-  syncNotes: true,
-  syncBooks: false,
-  strategy: 'silent',
-  deviceId: '',
-  lastSyncedAt: 0,
-} as GoogleDriveSettings;
 
 export const DEFAULT_S3_SETTINGS = {
   enabled: false,
@@ -176,16 +108,6 @@ export const DEFAULT_S3_SETTINGS = {
   deviceId: '',
   lastSyncedAt: 0,
 } as S3Settings;
-
-export const DEFAULT_ONEDRIVE_SETTINGS = {
-  enabled: false,
-  syncProgress: true,
-  syncNotes: true,
-  syncBooks: false,
-  strategy: 'silent',
-  deviceId: '',
-  lastSyncedAt: 0,
-} as OneDriveSettings;
 
 export const DEFAULT_ICLOUD_SETTINGS = {
   enabled: false,
@@ -257,15 +179,8 @@ export const DEFAULT_SYSTEM_SETTINGS: Partial<SystemSettings> = {
   },
 
   kosync: DEFAULT_KOSYNC_SETTINGS,
-  bookorbit: DEFAULT_BOOKORBIT_SETTINGS,
-  readwise: DEFAULT_READWISE_SETTINGS,
-  hardcover: DEFAULT_HARDCOVER_SETTINGS,
-  pagebound: DEFAULT_PAGEBOUND_SETTINGS,
-  notion: DEFAULT_NOTION_SETTINGS,
   webdav: DEFAULT_WEBDAV_SETTINGS,
-  googleDrive: DEFAULT_GOOGLE_DRIVE_SETTINGS,
   s3: DEFAULT_S3_SETTINGS,
-  onedrive: DEFAULT_ONEDRIVE_SETTINGS,
   icloud: DEFAULT_ICLOUD_SETTINGS,
   aiSettings: DEFAULT_AI_SETTINGS,
 

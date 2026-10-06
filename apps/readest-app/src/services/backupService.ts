@@ -55,7 +55,6 @@ export const BACKUP_SETTINGS_BLACKLIST = [
   // Per-device identity — restoring causes sync identity / HLC collisions.
   'replicaDeviceId',
   'kosync.deviceId',
-  'bookorbit.deviceId',
   // Sync cursors — stale values make sync skip pulls or re-push everything.
   'lastSyncedAtBooks',
   'lastSyncedAtConfigs',
@@ -65,12 +64,9 @@ export const BACKUP_SETTINGS_BLACKLIST = [
   'hardcover.lastSyncedAt',
   'pagebound.lastSyncedAt',
   'notion.lastSyncedAt',
-  'googleDrive.deviceId',
-  'googleDrive.lastSyncedAt',
   'webdav.deviceId',
   'webdav.lastSyncedAt',
   'webdav.providerSelectedAt',
-  'googleDrive.providerSelectedAt',
   'onedrive.deviceId',
   'onedrive.lastSyncedAt',
   'onedrive.providerSelectedAt',
@@ -102,9 +98,6 @@ export const BACKUP_SETTINGS_CREDENTIAL_FIELDS = [
   'kosync.username',
   'kosync.userkey',
   'kosync.password',
-  'bookorbit.username',
-  'bookorbit.userkey',
-  'bookorbit.password',
   'readwise.accessToken',
   'hardcover.accessToken',
   'hardcover.oauth',
@@ -156,7 +149,6 @@ export function sanitizeSettingsForBackup(
     for (const path of BACKUP_SETTINGS_CREDENTIAL_FIELDS) {
       deletePath(clone, path);
     }
-    if (clone.notion) clone.notion.enabled = false;
     if (Array.isArray(clone.opdsCatalogs)) {
       clone.opdsCatalogs = clone.opdsCatalogs.map((catalog) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars

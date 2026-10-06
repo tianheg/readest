@@ -145,7 +145,6 @@ const ViewMenu: React.FC<ViewMenuProps> = ({
     }
     // One tap, every provider the user selected.
     eventDispatcher.dispatch('sync-book-progress', { bookKey });
-    eventDispatcher.dispatch('flush-notion-sync', { bookKey });
     eventDispatcher.dispatch('push-file-sync', { bookKey });
     eventDispatcher.dispatch('pull-file-sync', { bookKey });
     eventDispatcher.dispatch('flush-kosync', { bookKey });

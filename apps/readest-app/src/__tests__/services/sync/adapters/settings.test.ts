@@ -92,35 +92,6 @@ describe('settingsAdapter', () => {
     expect(fields['kosync.serverUrl']).toBe('https://kosync.example');
   });
 
-  test('pack/unpack round-trips Notion connection fields and drops local sync state', () => {
-    const record: SettingsRemoteRecord = {
-      name: 'singleton',
-      patch: {
-        notion: {
-          enabled: true,
-          accessToken: 'notion-token',
-          databaseId: 'notion-database-id',
-          lastSyncedAt: 123,
-          includeChapterHeading: false,
-        },
-      } as Partial<SystemSettings>,
-    };
-
-    const fields = settingsAdapter.pack(record);
-    expect(fields['notion.databaseId']).toBe('notion-database-id');
-    expect(fields['notion.accessToken']).toBe('notion-token');
-    expect(fields['notion.enabled']).toBeUndefined();
-    expect(fields['notion.lastSyncedAt']).toBeUndefined();
-    expect(fields['notion.includeChapterHeading']).toBeUndefined();
-
-    const out = settingsAdapter.unpack(fields);
-    expect(out.patch.notion?.databaseId).toBe('notion-database-id');
-    expect(out.patch.notion?.accessToken).toBe('notion-token');
-    expect(out.patch.notion?.enabled).toBeUndefined();
-    expect(out.patch.notion?.lastSyncedAt).toBeUndefined();
-    expect(out.patch.notion?.includeChapterHeading).toBeUndefined();
-  });
-
   test('pack ∘ unpack round-trips WebDAV connection fields, dropping per-device state', () => {
     const record: SettingsRemoteRecord = {
       name: 'singleton',
@@ -256,58 +227,12 @@ describe('settingsAdapter', () => {
     expect(settingsAdapter.encryptedFields).toContain('kosync.customHeaders');
   });
 
-  test('pack ∘ unpack round-trips bookorbit.customHeaders, serialized to a JSON string across the boundary', () => {
-    const record: SettingsRemoteRecord = {
-      name: 'singleton',
-      patch: {
-        bookorbit: {
-          customHeaders: { 'CF-Access-Client-Id': 'client-id' },
-        },
-      } as unknown as Partial<SystemSettings>,
-    };
-    const fields = settingsAdapter.pack(record);
-    expect(fields['bookorbit.customHeaders']).toBe(
-      JSON.stringify({ 'CF-Access-Client-Id': 'client-id' }),
-    );
-
-    const out = settingsAdapter.unpack(fields);
-    expect(out.patch.bookorbit?.customHeaders).toEqual({ 'CF-Access-Client-Id': 'client-id' });
-  });
-
-  test('unpackRow parses bookorbit.customHeaders back from its JSON string envelope', () => {
-    const row = makeRow({
-      'bookorbit.customHeaders': env(JSON.stringify({ 'CF-Access-Client-Id': 'client-id' })),
-    });
-    const out = settingsAdapter.unpackRow(row, '');
-    expect(out).not.toBeNull();
-    expect(out!.patch.bookorbit?.customHeaders).toEqual({ 'CF-Access-Client-Id': 'client-id' });
-  });
-
-  test('pack drops empty/blank bookorbit.customHeaders instead of shipping an empty object', () => {
-    const record: SettingsRemoteRecord = {
-      name: 'singleton',
-      patch: {
-        bookorbit: { customHeaders: {} },
-      } as unknown as Partial<SystemSettings>,
-    };
-    const fields = settingsAdapter.pack(record);
-    expect(fields['bookorbit.customHeaders']).toBeUndefined();
-  });
-
-  test('bookorbit.customHeaders is encrypted, like the other bookorbit credential fields', () => {
-    expect(settingsAdapter.encryptedFields).toContain('bookorbit.customHeaders');
-  });
-
-  test('declares encryptedFields covering kosync / bookorbit / readwise / hardcover / webdav / s3 credentials only (not serverUrl / endpoint)', () => {
+  test('declares encryptedFields covering kosync / readwise / hardcover / webdav / s3 credentials only (not serverUrl / endpoint)', () => {
     expect(settingsAdapter.encryptedFields).toEqual([
       'kosync.username',
       'kosync.userkey',
       'kosync.password',
       'kosync.customHeaders',
-      'bookorbit.username',
-      'bookorbit.userkey',
-      'bookorbit.password',
-      'bookorbit.customHeaders',
       'readwise.accessToken',
       'hardcover.accessToken',
       'notion.accessToken',

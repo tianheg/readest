@@ -231,11 +231,9 @@ export const useFileSync = (bookKey: string) => {
     return [
       activeKindsKey,
       `webdav:${w?.serverUrl}:${w?.username}:${w?.password}:${w?.rootPath}`,
-      `gdrive:${settings.googleDrive?.enabled}`,
       `s3:${c?.endpoint}:${c?.region}:${c?.bucket}:${c?.accessKeyId}:${c?.secretAccessKey}`,
-      `onedrive:${settings.onedrive?.enabled}`,
     ].join('|');
-  }, [activeKindsKey, settings.webdav, settings.googleDrive, settings.s3, settings.onedrive]);
+  }, [activeKindsKey, settings.webdav, settings.s3]);
 
   const [engines, setEngines] = useState<
     Array<{ kind: FileSyncBackendKind; engine: FileSyncEngine }>

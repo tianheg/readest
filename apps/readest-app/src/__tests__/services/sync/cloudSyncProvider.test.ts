@@ -195,13 +195,8 @@ describe('isReadestCloudEnabled (always off in this fork)', () => {
     expect(isReadestCloudEnabled(s({}))).toBe(false);
   });
 
-  test('absent field with a third-party enabled means Readest Cloud is off (legacy exclusive)', () => {
-    expect(isReadestCloudEnabled(s({ googleDrive: { enabled: true } as never }))).toBe(false);
-  });
-
   test('an explicit true is ignored: no backend exists to enable', () => {
     const settings = s({
-      googleDrive: { enabled: true } as never,
       readestCloud: { enabled: true },
     });
     expect(isReadestCloudEnabled(settings)).toBe(false);

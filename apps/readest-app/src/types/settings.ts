@@ -99,90 +99,6 @@ export interface KOSyncSettings {
   sendMetadata?: boolean;
 }
 
-export interface BookOrbitSettings {
-  enabled: boolean;
-  /** Base server origin, e.g. https://books.example.com (no /api/v1/koreader suffix). */
-  serverUrl: string;
-  username: string;
-  userkey: string;
-  password?: string;
-  deviceId: string;
-  deviceName: string;
-  strategy: KOSyncStrategy;
-  syncProgress: boolean;
-  /** Annotations and bookmarks. */
-  syncNotes: boolean;
-  syncStats: boolean;
-  syncBookStates: boolean;
-  customHeaders?: Record<string, string>;
-  /**
-   * Manual-sync opt-out (#6029). BookOrbit records a reading log entry per
-   * push, so a few hours of reading buries the real sessions under
-   * debounce-sized updates. With this off nothing is pushed until the user
-   * asks; pulls stay automatic (they add nothing server-side and are what
-   * keeps a second device in step). Default ON — settings written before this
-   * option existed keep the automatic pushes they already had.
-   */
-  autoSync?: boolean;
-}
-
-export interface ReadwiseSettings {
-  enabled: boolean;
-  accessToken: string;
-  lastSyncedAt: number;
-  /**
-   * Send the book cover with pushed highlights (image_url). Optional so
-   * settings persisted before this option existed default to enabled.
-   */
-  includeCoverImage?: boolean;
-  /**
-   * Advanced: override the Readwise API base URL (e.g. for a self-hosted,
-   * Readwise-compatible receiver). When unset or blank, the official
-   * `READWISE_API_BASE_URL` is used.
-   */
-  baseUrl?: string;
-}
-
-export interface HardcoverSettings {
-  enabled: boolean;
-  /** Pasted API token; empty when signed in with OAuth. */
-  accessToken: string;
-  /** Device-local OAuth session; not synced (short-lived, refresh token rotates). */
-  oauth?: { accessToken: string; refreshToken?: string; expiresAt: number };
-  lastSyncedAt: number;
-  // When true, progress + notes are pushed to Hardcover automatically as the
-  // user reads (debounced) instead of only via the reader menu. Default OFF;
-  // existing connected users (undefined) stay manual until they opt in.
-  autoSync?: boolean;
-}
-
-export interface PageboundSettings {
-  enabled: boolean;
-  /** Display only: the account the session belongs to. */
-  email: string;
-  /** Firebase refresh token; Pagebound has no API tokens or OAuth. */
-  refreshToken: string;
-  /** Pagebound's own API token, exchanged from a Firebase id token. */
-  apiToken: string;
-  lastSyncedAt: number;
-  autoSync?: boolean;
-}
-
-export interface NotionSettings {
-  enabled: boolean;
-  /** Notion integration token (`secret_...`). */
-  accessToken: string;
-  /**
-   * Target Notion data source id. The connection form also accepts a database
-   * container or a page containing a child database and resolves it before
-   * persisting settings.
-   */
-  databaseId: string;
-  lastSyncedAt: number;
-  /** Append a chapter heading block before each highlight (default ON). */
-  includeChapterHeading?: boolean;
-}
-
 /**
  * Sort field for the WebDAV browser listing. 'name' reproduces the
  * legacy directories-first/alphabetical default; the date fields drive
@@ -236,24 +152,9 @@ export interface WebDAVSettings {
  * The OAuth token is NOT stored here — it lives in the OS keychain. `deviceId`
  * and `lastSyncedAt` are device-local (excluded from cross-device restore).
  */
-export interface GoogleDriveSettings {
-  enabled: boolean;
-  /** Connected account's email (or display name), shown in the settings UI. */
-  accountLabel?: string;
-  syncProgress?: boolean;
-  syncNotes?: boolean;
-  syncBooks?: boolean;
-  fullSync?: boolean;
-  strategy?: KOSyncStrategy;
-  deviceId?: string;
-  lastSyncedAt?: number;
-  /** See {@link WebDAVSettings.providerSelectedAt}. */
-  providerSelectedAt?: number;
-}
-
 /**
  * S3-compatible object-store file-sync settings — the third file-sync
- * backend alongside {@link WebDAVSettings} and {@link GoogleDriveSettings},
+ * backend alongside {@link WebDAVSettings} and Google Drive,
  * sharing the same engine, sub-toggles, and strategy vocabulary. Covers any
  * SigV4 endpoint: Cloudflare R2, AWS S3, MinIO, Backblaze B2. Addressing is
  * path-style (`<endpoint>/<bucket>/<key>`). Credentials live here like
@@ -281,26 +182,11 @@ export interface S3Settings {
 
 /**
  * Microsoft OneDrive file-sync settings. An OAuth-based file-sync backend
- * alongside {@link GoogleDriveSettings}, storing data in the Graph App Folder
+ * alongside Google Drive, storing data in the Graph App Folder
  * (approot). No URL / credentials / root path and no BYO client; the OAuth
  * token lives in the OS keychain (native) or sessionStorage (web), never here.
  * `deviceId`/`lastSyncedAt`/`providerSelectedAt` are device-local.
  */
-export interface OneDriveSettings {
-  enabled: boolean;
-  /** Connected account's userPrincipalName/email, shown in the settings UI. */
-  accountLabel?: string;
-  syncProgress?: boolean;
-  syncNotes?: boolean;
-  syncBooks?: boolean;
-  fullSync?: boolean;
-  strategy?: KOSyncStrategy;
-  deviceId?: string;
-  lastSyncedAt?: number;
-  /** See {@link WebDAVSettings.providerSelectedAt}. */
-  providerSelectedAt?: number;
-}
-
 /**
  * iCloud Drive file-sync settings. Available only in the iOS/macOS Tauri
  * apps: the backend is the app's ubiquity container, synced by the OS. No
@@ -557,17 +443,10 @@ export interface SystemSettings {
   biometricUnlockEnabled?: boolean;
 
   kosync: KOSyncSettings;
-  bookorbit: BookOrbitSettings;
-  readwise: ReadwiseSettings;
-  hardcover: HardcoverSettings;
-  pagebound: PageboundSettings;
-  notion: NotionSettings;
   /** Optional by design — see {@link ReadestCloudSettings}. Never defaulted. */
   readestCloud?: ReadestCloudSettings;
   webdav: WebDAVSettings;
-  googleDrive: GoogleDriveSettings;
   s3: S3Settings;
-  onedrive: OneDriveSettings;
   icloud: ICloudSettings;
 
   aiSettings: AISettings;

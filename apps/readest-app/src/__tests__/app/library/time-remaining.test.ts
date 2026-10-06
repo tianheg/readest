@@ -27,7 +27,7 @@ describe('getTimeRemainingMinutes', () => {
   // floated every audiobook to the top of a time-remaining sort (#6224).
   it('reads an audiobook straight off the clock, not the page estimate', () => {
     const audiobook = book({
-      format: 'BOOKORBIT',
+      format: 'OPDSAUDIO',
       duration: 37084,
       progress: [8548, 37084] as [number, number],
     });
@@ -38,13 +38,13 @@ describe('getTimeRemainingMinutes', () => {
 
   it('is undefined for an audiobook with no length recorded yet', () => {
     expect(
-      getTimeRemainingMinutes(book({ format: 'BOOKORBIT', progress: [10, 0] as [number, number] })),
+      getTimeRemainingMinutes(book({ format: 'OPDSAUDIO', progress: [10, 0] as [number, number] })),
     ).toBeUndefined();
   });
 
   it('is undefined for a finished audiobook', () => {
     const finished = book({
-      format: 'BOOKORBIT',
+      format: 'OPDSAUDIO',
       duration: 100,
       progress: [100, 100] as [number, number],
     });
@@ -56,7 +56,7 @@ describe('getTimeRemainingMinutes', () => {
 describe('getDisplayedTimeRemaining', () => {
   it('keeps hiding a time for books that render a status badge instead', () => {
     const base = {
-      format: 'BOOKORBIT' as const,
+      format: 'OPDSAUDIO' as const,
       duration: 37084,
       progress: [0, 37084] as [number, number],
     };

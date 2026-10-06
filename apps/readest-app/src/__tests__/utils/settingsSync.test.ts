@@ -47,7 +47,6 @@ describe('mergeSyncedGlobalSettings: readestCloud', () => {
       ...globals,
       cloudSyncProviders: {
         webdav: { enabled: true },
-        googleDrive: { enabled: false },
         readestCloud: { enabled: false, disabledAt: 1234 },
       },
     });
@@ -62,7 +61,6 @@ describe('mergeSyncedGlobalSettings: readestCloud', () => {
       ...globals,
       cloudSyncProviders: {
         webdav: { enabled: true },
-        googleDrive: { enabled: false },
       },
     });
     expect(merged.readestCloud?.enabled).toBe(true);
@@ -75,7 +73,6 @@ describe('mergeSyncedGlobalSettings: icloud', () => {
       ...globals,
       cloudSyncProviders: {
         webdav: { enabled: false },
-        googleDrive: { enabled: false },
         icloud: { enabled: true, providerSelectedAt: 123 },
       },
     });
@@ -89,7 +86,6 @@ describe('mergeSyncedGlobalSettings: icloud', () => {
       ...globals,
       cloudSyncProviders: {
         webdav: { enabled: false },
-        googleDrive: { enabled: false },
       },
     });
     expect(merged.icloud?.enabled).toBe(true);

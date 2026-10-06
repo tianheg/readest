@@ -63,16 +63,6 @@ export const SETTINGS_WHITELIST = [
   'kosync.userkey',
   'kosync.password',
   'kosync.customHeaders',
-  'bookorbit.serverUrl',
-  'bookorbit.username',
-  'bookorbit.userkey',
-  'bookorbit.password',
-  'bookorbit.customHeaders',
-  'readwise.baseUrl',
-  'readwise.accessToken',
-  'hardcover.accessToken',
-  'notion.databaseId',
-  'notion.accessToken',
   // WebDAV connection. serverUrl + rootPath sync as plaintext so a fresh
   // device pre-fills the connect form; username / password are listed in
   // `encryptedFields` below. Per-device bookkeeping (enabled, deviceId,
@@ -144,10 +134,6 @@ export const SETTINGS_ENCRYPTED_FIELDS = [
   'kosync.userkey',
   'kosync.password',
   'kosync.customHeaders',
-  'bookorbit.username',
-  'bookorbit.userkey',
-  'bookorbit.password',
-  'bookorbit.customHeaders',
   'readwise.accessToken',
   'hardcover.accessToken',
   'notion.accessToken',
@@ -167,7 +153,7 @@ export type SettingsWhitelistKey = (typeof SETTINGS_WHITELIST)[number];
  * to/from a JSON string at this boundary so the crypto middleware only
  * ever sees a string.
  */
-const OBJECT_VALUED_ENCRYPTED_PATHS = ['kosync.customHeaders', 'bookorbit.customHeaders'] as const;
+const OBJECT_VALUED_ENCRYPTED_PATHS = ['kosync.customHeaders'] as const;
 
 // In practice every path comes from the compile-time SETTINGS_WHITELIST so
 // these never appear, but readPath/writePath are exported helpers and the

@@ -92,7 +92,6 @@ describe('isSyncCategoryEnabled', () => {
     test('native channels stay gated even when no third-party provider is on', () => {
       setSettings({
         webdav: { enabled: false },
-        googleDrive: { enabled: false },
       } as Partial<SystemSettings>);
       expect(isSyncCategoryEnabled('book')).toBe(false);
       expect(isSyncCategoryEnabled('progress')).toBe(false);

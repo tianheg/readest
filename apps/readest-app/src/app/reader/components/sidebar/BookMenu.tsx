@@ -105,10 +105,6 @@ const BookMenu: React.FC<BookMenuProps> = ({ menuClassName, setIsDropdownOpen })
     eventDispatcher.dispatch('push-kosync', { bookKey: sideBarBookKey, provider });
     setIsDropdownOpen?.(false);
   };
-  const handlePushNotion = () => {
-    eventDispatcher.dispatch('notion-push-all', { bookKey: sideBarBookKey });
-    setIsDropdownOpen?.(false);
-  };
   // Routed through Annotator (per-book, long-lived) so that the
   // confirmation dialog isn't unmounted with the dropdown menu.
   const handleClearAnnotations = () => {
@@ -164,22 +160,12 @@ const BookMenu: React.FC<BookMenuProps> = ({ menuClassName, setIsDropdownOpen })
         ) : (
           <MenuItem label={_('Enter Parallel Read')} onClick={handleSetParallel} />
         ))}
-      {(settings.kosync.enabled ||
-        (settings.notion.enabled && settings.notion.accessToken && settings.notion.databaseId)) && (
-        <hr aria-hidden='true' className='border-base-200 my-1' />
-      )}
+      {settings.kosync.enabled && <hr aria-hidden='true' className='border-base-200 my-1' />}
       {settings.kosync.enabled && (
         <MenuItem label={_('KOReader Sync')} detailsOpen={false} buttonClass='py-2'>
           <ul className='flex flex-col ps-1'>
             <MenuItem label={_('Push Progress')} noIcon onClick={handlePushKOSync('kosync')} />
             <MenuItem label={_('Pull Progress')} noIcon onClick={handlePullKOSync('kosync')} />
-          </ul>
-        </MenuItem>
-      )}
-      {settings.notion.enabled && settings.notion.accessToken && settings.notion.databaseId && (
-        <MenuItem label={_('Notion Sync')} detailsOpen={false} buttonClass='py-2'>
-          <ul className='flex flex-col ps-1'>
-            <MenuItem label={_('Push Notes')} noIcon onClick={handlePushNotion} />
           </ul>
         </MenuItem>
       )}

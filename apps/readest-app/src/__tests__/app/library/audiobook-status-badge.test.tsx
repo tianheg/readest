@@ -39,7 +39,7 @@ const props = {
 };
 afterEach(cleanup);
 describe('audiobook status on library cards', () => {
-  for (const format of ['ABS', 'OPDSAUDIO', 'BOOKORBIT'] as const) {
+  for (const format of ['ABS', 'OPDSAUDIO'] as const) {
     for (const mode of ['grid', 'list'] as const) {
       it(`shows the Finished badge instead of -0s for ${format} in ${mode}`, () => {
         render(<BookItem {...props} book={{ ...book, format }} mode={mode} />);

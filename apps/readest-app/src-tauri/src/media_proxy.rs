@@ -59,10 +59,11 @@ const HEADER_TIMEOUT: Duration = Duration::from_secs(10);
 /// stops working anyway.
 ///
 /// Holding the credential here rather than in the loopback URL is deliberate:
-/// Audiobookshelf carries its token in the upstream URL's own query, but
-/// BookOrbit's asset route is bearer-only, and a URL handed to a media element
-/// ends up in the DOM. Re-registering with a refreshed token also leaves the
-/// URL untouched, so a token expiring mid-track does not interrupt playback.
+/// Audiobookshelf carries its token in the upstream URL's own query, but a
+/// bearer-only origin needs its Authorization header carried along, and a URL
+/// handed to a media element ends up in the DOM. Re-registering with a
+/// refreshed token also leaves the URL untouched, so a token expiring
+/// mid-track does not interrupt playback.
 type Origins = Arc<RwLock<HashMap<String, Option<String>>>>;
 
 struct Proxy {
@@ -612,8 +613,8 @@ mod tests {
         assert!(origin_credential(&other_scheme, &allow).is_none());
     }
 
-    /// BookOrbit's asset route is bearer-only, so the credential travels with
-    /// the origin rather than in the loopback URL a media element is given.
+    /// A bearer-only origin carries its credential with the origin rather
+    /// than in the loopback URL a media element is given.
     #[test]
     fn a_registered_origin_carries_its_authorization() {
         let allow: RwLock<HashMap<String, Option<String>>> = RwLock::new(HashMap::from([
@@ -623,12 +624,12 @@ mod tests {
                 Some("Bearer jwt".to_string()),
             ),
         ]));
-        let bookorbit =
-            Url::parse("http://books.example:13380/api/v1/audiobooks/8/assets/a/content").unwrap();
+        let bearer =
+            Url::parse("http://books.example:13380/assets/a/content").unwrap();
         let abs = Url::parse("https://abs.example/api/items/i1/file/2?token=t").unwrap();
 
         assert_eq!(
-            origin_credential(&bookorbit, &allow),
+            origin_credential(&bearer, &allow),
             Some(Some("Bearer jwt".to_string()))
         );
         // An allowed origin that authenticates another way sends no header.

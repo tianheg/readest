@@ -46,10 +46,9 @@ export interface KosyncProgressProvider {
  */
 export type KosyncEngineConfig = KOSyncSettings & {
   /**
-   * Manual-sync opt-out (#6029), set by BookOrbit only. When false the hook
-   * never pushes on its own; the server hears from us only on an explicit
-   * 'push-kosync'. Pulls stay automatic. Absent means automatic pushes, which
-   * is what KOReader Sync has always done.
+   * Manual-sync opt-out: when false the hook never pushes on its own; the
+   * server hears from us only on an explicit 'push-kosync'. Pulls stay
+   * automatic. Absent means automatic pushes.
    */
   autoSync?: boolean;
 };
@@ -411,9 +410,7 @@ export const useKOSync = (bookKey: string, provider: KosyncProgressProvider = ko
     syncRefs.current = { pushProgress, pullProgress };
   }, [pushProgress, pullProgress]);
 
-  // The KOSync and BookOrbit instances of this hook listen on the same event
-  // names, so a book-menu entry meant for one server would otherwise reach
-  // both. `detail.provider` addresses exactly one instance; an event without
+  // `detail.provider` addresses one instance of this hook; an event without
   // one still broadcasts (book close, the reader's Sync row).
   const providerName = provider.name;
   const isAddressedHere = useCallback(

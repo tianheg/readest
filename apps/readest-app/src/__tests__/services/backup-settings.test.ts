@@ -1,5 +1,5 @@
 import { journalBookshelfOperation } from '@/services/bookshelves/journal';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   BACKUP_SETTINGS_BLACKLIST,
   BACKUP_SETTINGS_CREDENTIAL_FIELDS,
@@ -83,22 +83,6 @@ function makeSettings(overrides: Partial<SystemSettings> = {}): SystemSettings {
       deviceId: 'webdav-device-id',
       lastSyncedAt: 666,
     },
-    readwise: { enabled: true, accessToken: 'rw-token', lastSyncedAt: 999 },
-    hardcover: { enabled: false, accessToken: 'hc-token', lastSyncedAt: 888 },
-    notion: {
-      enabled: true,
-      accessToken: 'notion-token',
-      databaseId: 'notion-database-id',
-      lastSyncedAt: 777,
-      includeChapterHeading: false,
-    },
-    googleDrive: {
-      enabled: true,
-      accountLabel: 'me@gmail.com',
-      strategy: 'silent',
-      deviceId: 'gdrive-device-id',
-      lastSyncedAt: 777,
-    },
     aiSettings: {
       enabled: true,
       provider: 'ollama',
@@ -120,6 +104,22 @@ function makeSettings(overrides: Partial<SystemSettings> = {}): SystemSettings {
 }
 
 it('exports local shelves independently of the originating device journal', () => {
+  // `NODE_OPTIONS=--localstorage-file` backs localStorage with a single file
+  // shared by every parallel test worker in this lane, so a sibling file's
+  // localStorage.clear() can evict this test's journal entry between the
+  // write below and the sanitize call. Pin an in-process store so the
+  // journal round-trip is deterministic.
+  const mem = new Map<string, string>();
+  vi.stubGlobal('localStorage', {
+    get length() {
+      return mem.size;
+    },
+    key: (i: number) => [...mem.keys()][i] ?? null,
+    getItem: (k: string) => mem.get(k) ?? null,
+    setItem: (k: string, v: string) => void mem.set(k, String(v)),
+    removeItem: (k: string) => void mem.delete(k),
+    clear: () => mem.clear(),
+  });
   const shelf = createBookshelf('Anonymous backup');
   const t = hlcPack(100, 0, 'device');
   const row = {
@@ -140,6 +140,7 @@ it('exports local shelves independently of the originating device journal', () =
   localStorage.clear();
   expect(readBookshelves(backup).some((s) => s.id === shelf.id)).toBe(true);
   expect(settings.bookshelves?.rows[shelf.id]?.localOnly).toBe(true);
+  vi.unstubAllGlobals();
 });
 
 describe('sanitizeSettingsForBackup - blacklist', () => {
@@ -155,9 +156,7 @@ describe('sanitizeSettingsForBackup - blacklist', () => {
     const out = rec(sanitizeSettingsForBackup(makeSettings()));
     expect(out['replicaDeviceId']).toBeUndefined();
     expect(rec(out['kosync'])['deviceId']).toBeUndefined();
-    expect(rec(out['googleDrive'])['deviceId']).toBeUndefined();
-    // Non-identity Drive settings still travel with the backup.
-    expect(rec(out['googleDrive'])['enabled']).toBe(true);
+    expect(out['googleDrive']).toBeUndefined();
     // WebDAV device identity and cursor stay on the device; restoring
     // them onto a second device would duplicate WebDAV sync identity.
     expect(rec(out['webdav'])['deviceId']).toBeUndefined();
@@ -171,11 +170,6 @@ describe('sanitizeSettingsForBackup - blacklist', () => {
     expect(out['lastSyncedAtConfigs']).toBeUndefined();
     expect(out['lastSyncedAtNotes']).toBeUndefined();
     expect(out['lastSyncedAtReplicas']).toBeUndefined();
-    expect(rec(out['readwise'])['lastSyncedAt']).toBeUndefined();
-    expect(rec(out['hardcover'])['lastSyncedAt']).toBeUndefined();
-    expect(rec(out['notion'])['lastSyncedAt']).toBeUndefined();
-    expect(rec(out['notion'])['databaseId']).toBe('notion-database-id');
-    expect(rec(out['googleDrive'])['lastSyncedAt']).toBeUndefined();
   });
 
   it('strips readestCloud.disabledAt but keeps readestCloud.enabled', () => {
@@ -238,9 +232,6 @@ describe('sanitizeSettingsForBackup - credentials', () => {
     expect(rec(out.kosync)['username']).toBeUndefined();
     expect(rec(out.kosync)['userkey']).toBeUndefined();
     expect(rec(out.kosync)['password']).toBeUndefined();
-    expect(rec(out.readwise)['accessToken']).toBeUndefined();
-    expect(rec(out.hardcover)['accessToken']).toBeUndefined();
-    expect(rec(out.notion)['accessToken']).toBeUndefined();
     expect(rec(out.aiSettings)['aiGatewayApiKey']).toBeUndefined();
     expect(rec(out.aiSettings)['openrouterApiKey']).toBeUndefined();
     // non-credential aiSettings fields (e.g. base URL) survive
@@ -260,9 +251,6 @@ describe('sanitizeSettingsForBackup - credentials', () => {
   it('keeps credentials when includeCredentials is true', () => {
     const out = sanitizeSettingsForBackup(makeSettings(), { includeCredentials: true });
     expect(out.kosync.password).toBe('kpass');
-    expect(out.readwise.accessToken).toBe('rw-token');
-    expect(out.hardcover.accessToken).toBe('hc-token');
-    expect(out.notion.accessToken).toBe('notion-token');
     expect(rec(out.aiSettings)['aiGatewayApiKey']).toBe('ai-secret-key');
     expect(rec(out.aiSettings)['openrouterApiKey']).toBe('or-secret-key');
     expect(out.opdsCatalogs[0]!.username).toBe('opds-user');
@@ -274,7 +262,6 @@ describe('sanitizeSettingsForBackup - credentials', () => {
     const out = rec(sanitizeSettingsForBackup(makeSettings(), { includeCredentials: true }));
     expect(out['localBooksDir']).toBeUndefined();
     expect(out['replicaDeviceId']).toBeUndefined();
-    expect(rec(out['notion'])['lastSyncedAt']).toBeUndefined();
   });
 
   it('every credential path is a string', () => {

@@ -388,13 +388,12 @@ describe('useKOSync — no phantom re-prompt after resolving (#5527)', () => {
 });
 
 describe('useKOSync — manual sync mode (#6029)', () => {
-  // Turning BookOrbit's Auto Sync off must stop every push Readest makes on
-  // its own, so the server stops accumulating a progress log entry every few
-  // minutes. Pulls stay automatic — they add no server-side clutter and are
-  // what keeps a second device in step. BookOrbit reaches this hook as a
-  // provider whose config carries the flag; KOReader Sync never sets it.
-  const manualBookOrbit: KosyncProgressProvider = {
-    name: 'bookorbit',
+  // Turning Auto Sync off must stop every push Readest makes on its own, so
+  // the server stops accumulating a progress log entry every few minutes.
+  // Pulls stay automatic — they add no server-side clutter and are what keeps
+  // a second device in step. The provider's config carries the flag.
+  const manualProvider: KosyncProgressProvider = {
+    name: 'kosync',
     selectConfig: (settings) => ({ ...settings.kosync, autoSync: false }),
   };
   const turnPage = async (rerender: () => void) => {
@@ -420,7 +419,7 @@ describe('useKOSync — manual sync mode (#6029)', () => {
   });
 
   test('does NOT auto-push on a page turn', async () => {
-    const { rerender } = renderHook(() => useKOSync('h1-view1', manualBookOrbit));
+    const { rerender } = renderHook(() => useKOSync('h1-view1', manualProvider));
     await settle();
     await turnPage(rerender);
 
@@ -428,7 +427,7 @@ describe('useKOSync — manual sync mode (#6029)', () => {
   });
 
   test('does NOT push when the window is deactivated', async () => {
-    renderHook(() => useKOSync('h1-view1', manualBookOrbit));
+    renderHook(() => useKOSync('h1-view1', manualProvider));
     await settle();
 
     await act(async () => {
@@ -440,7 +439,7 @@ describe('useKOSync — manual sync mode (#6029)', () => {
   });
 
   test('still pulls automatically on open', async () => {
-    renderHook(() => useKOSync('h1-view1', manualBookOrbit));
+    renderHook(() => useKOSync('h1-view1', manualProvider));
     await settle();
 
     expect(h.getProgressMock).toHaveBeenCalled();
@@ -448,7 +447,7 @@ describe('useKOSync — manual sync mode (#6029)', () => {
   });
 
   test('still pushes on an explicit push-kosync request', async () => {
-    const { rerender } = renderHook(() => useKOSync('h1-view1', manualBookOrbit));
+    const { rerender } = renderHook(() => useKOSync('h1-view1', manualProvider));
     await settle();
     await turnPage(rerender);
     expect(h.updateProgressMock).not.toHaveBeenCalled();
