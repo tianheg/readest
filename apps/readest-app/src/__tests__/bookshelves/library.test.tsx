@@ -58,7 +58,6 @@ vi.mock('@/store/absServerStore', () => ({
 vi.mock('overlayscrollbars-react', () => ({
   useOverlayScrollbars: () => [mocks.initialize, mocks.instance],
 }));
-vi.mock('@/app/library/components/ShareBookDialog', () => ({ default: () => null }));
 vi.mock('@/app/library/components/BookshelfItem', () => ({
   default: ({
     item,

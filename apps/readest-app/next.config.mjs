@@ -131,10 +131,6 @@ const nextConfig = {
         source: '/reader/:ids',
         destination: '/reader?ids=:ids',
       },
-      {
-        source: '/s/:token',
-        destination: '/s?token=:token',
-      },
     ];
   },
   async headers() {

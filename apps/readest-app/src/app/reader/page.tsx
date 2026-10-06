@@ -6,8 +6,6 @@ import { useAppUrlIngress } from '@/hooks/useAppUrlIngress';
 import { useOpenWithBooks } from '@/hooks/useOpenWithBooks';
 import { useOpenLaunchLinks } from '@/hooks/useOpenLaunchLinks';
 import { useHomeScreenWidgets } from '@/hooks/useHomeScreenWidgets';
-import { useOpenShareLink } from '@/hooks/useOpenShareLink';
-import { useOpenDeviceLink } from '@/hooks/useOpenDeviceLink';
 import { useRestoreLibraryOnRelaunch } from '@/hooks/useRestoreLibraryOnRelaunch';
 import { useSettingsStore } from '@/store/settingsStore';
 import { tauriHandleSetAlwaysOnTop } from '@/utils/window';
@@ -22,8 +20,6 @@ export default function Page() {
   useOpenWithBooks();
   useOpenLaunchLinks();
   useHomeScreenWidgets();
-  useOpenShareLink();
-  useOpenDeviceLink();
   useRestoreLibraryOnRelaunch();
 
   useEffect(() => {

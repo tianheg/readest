@@ -35,7 +35,6 @@ vi.mock('@/store/absServerStore', () => ({
   useABSServerStore: () => mocks.servers,
   isAbsBookOrphaned: () => false,
 }));
-vi.mock('@/app/library/components/ShareBookDialog', () => ({ default: () => null }));
 vi.mock('@/app/library/components/BookshelfItem', () => ({
   default: ({
     item,
