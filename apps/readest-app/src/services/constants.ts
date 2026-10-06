@@ -986,10 +986,15 @@ export const READEST_NIGHTLY_UPDATER_FILE = '';
 export const READEST_UPDATER_PUBKEY =
   'dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEJFMEQ1QjE2OEU1NEIzNTEKUldSUnMxU09GbHNOdmpEaWFMT1crRFpEV2VORzQ2MklxaFc0M1R0ci9xY2c1bENXS0xhM1R1L2sK';
 
-export const READEST_PUBLIC_STORAGE_BASE_URL = 'https://storage.readest.com';
-// Custom domain serving the readest-public bucket; durable media assets
-// (e.g. published book covers) are linked through this host.
-export const READEST_PUBLIC_ASSETS_BASE_URL = 'https://assets.readest.com';
+// Fork: no Readest storage/asset CDN (same treatment as LATEST_DOWNLOAD_
+// BASE_URL above). Both bases feed only pages/api/storage/upload.ts, whose
+// Supabase-backed admin client now points at the unreachable stub — the route
+// can never mint a URL any more, so blank the hosts instead of shipping them.
+export const READEST_PUBLIC_STORAGE_BASE_URL = '';
+// Deployments wanting public media links re-point this at their own origin
+// (upstream comment: custom domain serving the readest-public bucket, durable
+// media assets such as published book covers).
+export const READEST_PUBLIC_ASSETS_BASE_URL = '';
 
 export const READEST_OPDS_USER_AGENT = 'Readest/1.0 (OPDS Browser)';
 

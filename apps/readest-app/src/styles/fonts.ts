@@ -36,9 +36,12 @@ const getAdditionalBasicFontLinks = () => `
     .join('&')}&display=swap" crossorigin="anonymous">
 `;
 
-// CJK bundles Readest serves itself. The default CDN only answers CORS for
-// readest.com origins, so a self-hosted deployment on a custom domain gets each
-// of these blocked unless it points FONT_BASE_URL at a host it controls (#5550).
+// CJK bundles Readest serves itself. Fork: that CDN is never contacted in
+// this build — the four links are emitted only when the deployment points
+// fontBaseUrl (FONT_BASE_URL env) at a host it controls. Readest's own CDN
+// only answered CORS for readest.com origins, so a foreign deployment lost
+// these four fonts either way (#5550); dropping the default loses nothing
+// that ever worked off-origin.
 const hostedCJKFonts = [
   'Huiwen-MinchoGBK',
   'KingHwa_OldSong',
@@ -46,22 +49,24 @@ const hostedCJKFonts = [
   'GuanKiapTsingKhai-T',
 ];
 
-const DEFAULT_FONT_BASE_URL = 'https://storage.readest.com/public/font/dist';
-
-const getFontBaseUrl = () =>
-  (getRuntimeConfig()?.fontBaseUrl || DEFAULT_FONT_BASE_URL).replace(/\/+$/, '');
+// Fork: no DEFAULT_FONT_BASE_URL — '' (unset) skips the hosted links entirely
+// instead of building root-relative URLs that 404 on every reader mount.
+const getFontBaseUrl = () => (getRuntimeConfig()?.fontBaseUrl ?? '').replace(/\/+$/, '');
 
 const getAdditionalCJKFontLinks = () => {
   const fontBaseUrl = getFontBaseUrl();
+  const hostedCJKLinks = fontBaseUrl
+    ? hostedCJKFonts
+        .map(
+          (family) =>
+            `<link rel='stylesheet' href='${fontBaseUrl}/${encodeURIComponent(family)}/result.css' crossorigin="anonymous" />`,
+        )
+        .join('\n  ')
+    : '';
   return `
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/misans-webfont@1.0.4/misans-l3/misans-l3/result.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lxgw-wenkai-screen-web/1.520.0/lxgwwenkaigbscreen/result.css" crossorigin="anonymous" />
-  ${hostedCJKFonts
-    .map(
-      (family) =>
-        `<link rel='stylesheet' href='${fontBaseUrl}/${encodeURIComponent(family)}/result.css' crossorigin="anonymous" />`,
-    )
-    .join('\n  ')}
+  ${hostedCJKLinks}
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?${cjkGoogleFonts
     .map(
       ({ family, weights }) =>

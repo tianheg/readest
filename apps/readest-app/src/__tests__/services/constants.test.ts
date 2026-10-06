@@ -909,8 +909,8 @@ describe('services/constants', () => {
       expect(READEST_CHANGELOG_FILE).toMatch(/\.json$/);
     });
 
-    it('READEST_PUBLIC_STORAGE_BASE_URL is a valid URL', () => {
-      expect(READEST_PUBLIC_STORAGE_BASE_URL).toMatch(/^https:\/\//);
+    it('READEST_PUBLIC_STORAGE_BASE_URL carries no vendor host (fork: blanked)', () => {
+      expect(READEST_PUBLIC_STORAGE_BASE_URL).not.toMatch(/^https:/);
     });
 
     it('READEST_OPDS_USER_AGENT is a non-empty string', () => {
