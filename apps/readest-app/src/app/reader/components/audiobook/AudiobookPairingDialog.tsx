@@ -454,16 +454,12 @@ const AudiobookPairingDialog = ({ bookKey, bookDoc, onClose }: AudiobookPairingD
     const streamedFrom =
       association.source?.kind === 'audiobookshelf'
         ? (findABSServerById(association.source.serverId)?.name ?? 'Audiobookshelf')
-        : association.source?.kind === 'bookorbit'
-          ? 'BookOrbit'
-          : null;
+        : null;
     return (
       <>
         <SurfaceHeader
           title={_('Paired Audiobook')}
           description={
-            // Source-neutral: this dialog now covers BookOrbit pairings too,
-            // and the server's own name is shown in the row below either way.
             streamedFrom
               ? _('Manage the streamed audiobook paired with this ebook.')
               : _('Manage the local recording paired with this ebook.')

@@ -52,13 +52,6 @@ import { applyOPDSMetadata, getOPDSBookMetadata } from '@/services/opds/metadata
 import { buildPseStreamFileName } from '@/services/opds/pseStream';
 import { md5 } from '@/utils/md5';
 import { makeOpdsAudioFilePath, opdsAudioIdentity } from '@/services/opds/audiobook';
-import {
-  makeBookOrbitAudioFilePath,
-  matchBookOrbitAudiobook,
-} from '@/services/bookorbit/audiobookId';
-import { autoPairBookOrbitAudiobook, loadEbookChapterIds } from '@/services/bookorbit/autoPair';
-import { BookOrbitClient } from '@/services/bookorbit/client';
-import { pickAudioLinks } from '@/services/opds/audiobook';
 import type { OpdsAudioTrackLink } from '@/services/opds/audiobook';
 import type { Book } from '@/types/book';
 import { FeedView } from './components/FeedView';
@@ -655,37 +648,6 @@ export default function BrowserPage() {
                 console.warn('OPDS: failed to apply the feed cover:', coverError);
               }
             }
-            // A BookOrbit entry that offers both formats is one book: importing
-            // the ebook is enough to know what the narration is, so pair them
-            // outright rather than sending the user to the wizard (#6224).
-            if (book && publication) {
-              const audioHrefs = pickAudioLinks(publication.links ?? [])
-                .map((link) => resolveURL(link.href ?? '', state.baseURL))
-                .filter(Boolean);
-              const native = matchBookOrbitAudiobook(
-                audioHrefs,
-                settings.bookorbit ?? { serverUrl: '', password: '' },
-              );
-              if (native) {
-                void autoPairBookOrbitAudiobook({
-                  book,
-                  bookId: native.bookId,
-                  loadManifest: (id) =>
-                    new BookOrbitClient(
-                      {
-                        serverUrl: settings.bookorbit!.serverUrl,
-                        username: settings.bookorbit!.username,
-                        password: settings.bookorbit!.password,
-                        customHeaders: settings.bookorbit!.customHeaders,
-                      },
-                      { onTokensUpdated: () => {} },
-                    ).getManifest(id),
-                  loadTocChapterIds: (target) => loadEbookChapterIds(appService, target),
-                  appService,
-                  settings,
-                });
-              }
-            }
             if (book && catalogSourceId) {
               try {
                 await upsertOPDSSourceMapping(appService, {
@@ -758,28 +720,18 @@ export default function BrowserPage() {
           ...track,
           href: resolveURL(track.href, state.baseURL),
         }));
-        // When the catalog being browsed IS the BookOrbit configured for sync,
-        // its audiobook API serves the same book with chapters, byte ranges and
-        // a shared listening position — none of which OPDS can express (#6224).
-        const native = matchBookOrbitAudiobook(
-          resolved.map((track) => track.href),
-          settings.bookorbit ?? { serverUrl: '', password: '' },
-        );
-        const filePath = native
-          ? makeBookOrbitAudioFilePath(native.bookId)
-          : makeOpdsAudioFilePath({ catalogId, title, author, tracks: resolved });
+        const filePath = makeOpdsAudioFilePath({ catalogId, title, author, tracks: resolved });
         const { library, setLibrary } = useLibraryStore.getState();
         // Hashed over the book's identity, not the whole filePath: that string
         // also carries the title and author, so a catalog correcting either one
-        // would hash to a new row and strand the listening progress on the old
-        // one. The BookOrbit path is already just `bookorbit://<id>`.
-        const hash = md5(native ? filePath : opdsAudioIdentity(catalogId, resolved));
+        // would hash to a new row and strand the listening progress on the old one.
+        const hash = md5(opdsAudioIdentity(catalogId, resolved));
         const now = Date.now();
         const existing = library.find((b) => b.hash === hash);
         if (!existing) {
           const stub: Book = {
             hash,
-            format: native ? 'BOOKORBIT' : 'OPDSAUDIO',
+            format: 'OPDSAUDIO',
             filePath,
             title,
             author,
@@ -819,16 +771,7 @@ export default function BrowserPage() {
         });
       }
     },
-    [
-      state.baseURL,
-      catalogId,
-      appService,
-      libraryLoaded,
-      router,
-      publicationCoverHref,
-      settings.bookorbit,
-      _,
-    ],
+    [state.baseURL, catalogId, appService, libraryLoaded, router, publicationCoverHref, _],
   );
 
   const handleGenerateCachedImageUrl = useCallback(

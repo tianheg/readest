@@ -32,7 +32,6 @@ import { useBackgroundTexture } from '@/hooks/useBackgroundTexture';
 import { useAutoFocus } from '@/hooks/useAutoFocus';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useEinkMode } from '@/hooks/useEinkMode';
-import { bookOrbitProgressProvider } from '../hooks/bookOrbitProgressProvider';
 import { useKOSync } from '../hooks/useKOSync';
 import { useFileSync } from '../hooks/useFileSync';
 import {
@@ -205,7 +204,6 @@ const FoliateViewer: React.FC<{
   useProgressAutoSave(bookKey);
   useBookCoverAutoSave(bookKey);
   const { syncState, conflictDetails, resolveWithLocal, resolveWithRemote } = useKOSync(bookKey);
-  const bookOrbitSync = useKOSync(bookKey, bookOrbitProgressProvider);
   useFileSync(bookKey);
   useTextTranslation(bookKey, viewRef.current);
 
@@ -1225,14 +1223,6 @@ const FoliateViewer: React.FC<{
           onResolveWithLocal={resolveWithLocal}
           onResolveWithRemote={resolveWithRemote}
           onClose={resolveWithLocal}
-        />
-      )}
-      {bookOrbitSync.syncState === 'conflict' && bookOrbitSync.conflictDetails && (
-        <KOSyncConflictResolver
-          details={bookOrbitSync.conflictDetails}
-          onResolveWithLocal={bookOrbitSync.resolveWithLocal}
-          onResolveWithRemote={bookOrbitSync.resolveWithRemote}
-          onClose={bookOrbitSync.resolveWithLocal}
         />
       )}
     </>

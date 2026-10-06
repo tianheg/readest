@@ -10,11 +10,8 @@ import { TrackerCore, type FlushedEvent } from '@/services/statistics/trackerCor
 import { getBookHashFromKey, ttsSessionManager } from '@/services/tts/TTSSessionManager';
 import { DEFAULT_STATS_TRACKING_CONFIG } from '@/types/statistics';
 import { SyncClient } from '@/libs/sync';
-import { BookOrbitClient } from '@/services/bookorbit/BookOrbitClient';
-import { pushStatsToBookOrbit } from '@/services/bookorbit/statsPush';
 import { pushStats, pullStats } from '@/services/statistics/statsSync';
 import { isSyncCategoryEnabled } from '@/services/sync/syncCategories';
-import { useSettingsStore } from '@/store/settingsStore';
 import { eventDispatcher } from '@/utils/event';
 
 const nowSec = () => Math.floor(Date.now() / 1000);
@@ -57,26 +54,8 @@ export default function ReadingStatsTracker({ bookKey }: { bookKey: string }) {
 
   const syncEnabled = () => !!user && isSyncCategoryEnabled('stats');
 
-  // BookOrbit stats push needs no Readest account — only the integration.
-  const bookOrbitStatsPush = (db: StatisticsDb): Promise<unknown> | undefined => {
-    const { settings } = useSettingsStore.getState();
-    const bookorbit = settings.bookorbit;
-    if (
-      !bookorbit.enabled ||
-      !bookorbit.syncStats ||
-      !bookorbit.serverUrl ||
-      !bookorbit.username ||
-      !bookorbit.userkey
-    ) {
-      return undefined;
-    }
-    return pushStatsToBookOrbit(db, new BookOrbitClient(bookorbit));
-  };
-
   const pushToAllTargets = (db: StatisticsDb) => {
     if (syncEnabled()) runBestEffort(pushStats(db, new SyncClient()));
-    const bookOrbitPush = bookOrbitStatsPush(db);
-    if (bookOrbitPush) runBestEffort(bookOrbitPush);
   };
 
   const schedulePush = () => {

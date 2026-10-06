@@ -13,7 +13,6 @@ import {
   OpdsAudioWebAuthError,
   openOpdsAudiobookSession,
 } from '@/services/opds/openOpdsAudiobook';
-import { openBookOrbitAudiobookSession } from '@/services/bookorbit/openBookOrbitAudiobook';
 import { ttsSessionManager } from '@/services/tts/TTSSessionManager';
 import { useEnv } from '@/context/EnvContext';
 import { useAppRouter } from '@/hooks/useAppRouter';
@@ -164,16 +163,6 @@ const PlayerRoute = () => {
           const activeAppService = appService ?? (await envConfig.getAppService());
           // An OPDS audiobook has no ABS server behind it; its tracks come
           // straight from the catalog's acquisition links (#6224).
-          // BookOrbit's own audiobook API carries chapters, byte ranges and a
-          // shared listening position; OPDS can express none of that (#6224).
-          if (resolvedBook.format === 'BOOKORBIT') {
-            return {
-              result: await openBookOrbitAudiobookSession({
-                appService: activeAppService,
-                book: resolvedBook,
-              }),
-            };
-          }
           if (resolvedBook.format === 'OPDSAUDIO') {
             try {
               return {

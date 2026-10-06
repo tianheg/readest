@@ -36,7 +36,7 @@ type SyncState = 'idle' | 'checking' | 'conflict' | 'synced' | 'error';
  * exists once credentials are set, `enabled` is checked at pull/push time.
  */
 export interface KosyncProgressProvider {
-  name: 'kosync' | 'bookorbit';
+  name: 'kosync';
   selectConfig: (settings: SystemSettings) => KosyncEngineConfig | null;
 }
 
