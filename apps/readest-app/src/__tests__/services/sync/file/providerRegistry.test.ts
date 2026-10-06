@@ -1,19 +1,9 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
 
-vi.mock('@/services/sync/providers/gdrive/buildGoogleDriveProvider', () => ({
-  buildGoogleDriveProvider: vi.fn(),
-}));
-
-vi.mock('@/services/sync/providers/onedrive/buildOneDriveProvider', () => ({
-  buildOneDriveProvider: vi.fn(),
-}));
-
 vi.mock('@/services/sync/providers/icloud/buildICloudProvider', () => ({
   buildICloudProvider: vi.fn(),
 }));
 
-import { buildGoogleDriveProvider } from '@/services/sync/providers/gdrive/buildGoogleDriveProvider';
-import { buildOneDriveProvider } from '@/services/sync/providers/onedrive/buildOneDriveProvider';
 import { buildICloudProvider } from '@/services/sync/providers/icloud/buildICloudProvider';
 import {
   createFileSyncProvider,
@@ -69,13 +59,6 @@ describe('createFileSyncProvider', () => {
     expect(await createFileSyncProvider('s3', {})).toBeNull();
   });
 
-  test('delegates gdrive to buildGoogleDriveProvider', async () => {
-    const fake = { rootPath: '/' } as unknown as FileSyncProvider;
-    vi.mocked(buildGoogleDriveProvider).mockResolvedValueOnce(fake);
-    expect(await createFileSyncProvider('gdrive', {})).toBe(fake);
-    expect(buildGoogleDriveProvider).toHaveBeenCalledTimes(1);
-  });
-
   // The provider is memoised per connection key so its path->id cache stays
   // warm across surfaces (reader hook, library auto-sync, Sync now): a cold
   // provider re-resolves /Readest, books/ and library.json by name query on
@@ -85,21 +68,6 @@ describe('createFileSyncProvider', () => {
     const first = await createFileSyncProvider('webdav', { webdav });
     const second = await createFileSyncProvider('webdav', { webdav });
     expect(second).toBe(first);
-  });
-
-  test('memoises the gdrive build (keychain probed once)', async () => {
-    const fake = { rootPath: '/' } as unknown as FileSyncProvider;
-    vi.mocked(buildGoogleDriveProvider).mockResolvedValue(fake);
-    await createFileSyncProvider('gdrive', {});
-    await createFileSyncProvider('gdrive', {});
-    expect(buildGoogleDriveProvider).toHaveBeenCalledTimes(1);
-  });
-
-  test('delegates onedrive to buildOneDriveProvider and does not throw', async () => {
-    vi.mocked(buildOneDriveProvider).mockResolvedValueOnce(null);
-    const result = await createFileSyncProvider('onedrive', { onedrive: { enabled: true } });
-    expect(result).toBeNull();
-    expect(buildOneDriveProvider).toHaveBeenCalledTimes(1);
   });
 
   test('rebuilds when the connection settings change', async () => {

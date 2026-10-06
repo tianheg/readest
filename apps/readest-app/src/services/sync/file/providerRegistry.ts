@@ -13,19 +13,15 @@
 import type { FileSyncProvider } from './provider';
 import type { S3Settings, WebDAVSettings } from '@/types/settings';
 import { createWebDAVProvider } from '@/services/sync/providers/webdav/WebDAVProvider';
-import { buildGoogleDriveProvider } from '@/services/sync/providers/gdrive/buildGoogleDriveProvider';
-import { buildOneDriveProvider } from '@/services/sync/providers/onedrive/buildOneDriveProvider';
 import { buildICloudProvider } from '@/services/sync/providers/icloud/buildICloudProvider';
 import { createS3Provider } from '@/services/sync/providers/s3/S3Provider';
 
-export type FileSyncBackendKind = 'webdav' | 'gdrive' | 's3' | 'onedrive' | 'icloud';
+export type FileSyncBackendKind = 'webdav' | 's3' | 'icloud';
 
 /** Minimal settings the registry reads to pick + build backends. */
 export interface FileSyncBackendsSettings {
   webdav?: WebDAVSettings;
-  googleDrive?: { enabled?: boolean };
   s3?: S3Settings;
-  onedrive?: { enabled?: boolean };
   icloud?: { enabled?: boolean };
 }
 
@@ -59,9 +55,8 @@ const providerCacheKey = (
     const c = settings.s3;
     return `s3:${c?.enabled}:${c?.endpoint}:${c?.region}:${c?.bucket}:${c?.accessKeyId}:${c?.secretAccessKey}`;
   }
-  if (kind === 'onedrive') return 'onedrive';
   if (kind === 'icloud') return 'icloud';
-  return 'gdrive';
+  return kind;
 };
 
 export const resetFileSyncProviderCache = (): void => {
@@ -89,11 +84,9 @@ export const createFileSyncProvider = async (
         ? settings.s3
           ? createS3Provider(settings.s3)
           : null
-        : kind === 'onedrive'
-          ? await buildOneDriveProvider()
-          : kind === 'icloud'
-            ? await buildICloudProvider()
-            : await buildGoogleDriveProvider();
+        : kind === 'icloud'
+          ? await buildICloudProvider()
+          : null;
   if (provider) providerCache.set(kind, { key, provider });
   return provider;
 };

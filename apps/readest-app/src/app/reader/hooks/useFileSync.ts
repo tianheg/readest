@@ -207,14 +207,8 @@ export const useFileSync = (bookKey: string) => {
           case 'webdav':
             next = { ...next, webdav: { ...next.webdav, lastSyncedAt: ts } };
             break;
-          case 'gdrive':
-            next = { ...next, googleDrive: { ...next.googleDrive, lastSyncedAt: ts } };
-            break;
           case 's3':
             next = { ...next, s3: { ...next.s3, lastSyncedAt: ts } };
-            break;
-          case 'onedrive':
-            next = { ...next, onedrive: { ...next.onedrive, lastSyncedAt: ts } };
             break;
           case 'icloud':
             next = { ...next, icloud: { ...next.icloud, lastSyncedAt: ts } };
@@ -287,8 +281,7 @@ export const useFileSync = (bookKey: string) => {
       eventDispatcher.dispatch('hint', {
         bookKey,
         timeout: 5000,
-        message:
-          kind === 'gdrive' ? _('Google Drive session expired') : _('Cloud sync session expired'),
+        message: _('Cloud sync session expired'),
       });
     },
     [bookKey, _],

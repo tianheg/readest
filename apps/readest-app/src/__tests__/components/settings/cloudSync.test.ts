@@ -56,29 +56,29 @@ describe('withCloudProviderEnabled', () => {
       password: 'p',
       rootPath: '/',
     },
-    googleDrive: { enabled: false, accountLabel: 'a@b.com' },
+    // Fork: gdrive/onedrive are not sync backends in this build; s3 stands in
+    // as the third-party provider exercised by these activation tests.
     s3: { enabled: false },
-    onedrive: { enabled: false },
   } as unknown as SystemSettings;
 
   test('enabling one provider leaves the others alone', () => {
-    const next = withCloudProviderEnabled(both, 'gdrive', true);
-    expect(next.googleDrive.enabled).toBe(true);
+    const next = withCloudProviderEnabled(both, 's3', true);
+    expect(next.s3.enabled).toBe(true);
     expect(next.webdav.enabled).toBe(true);
   });
 
   test('activation stamps syncBooks and providerSelectedAt on the off-to-on edge only', () => {
-    const next = withCloudProviderEnabled(both, 'gdrive', true);
-    expect(next.googleDrive.syncBooks).toBe(true);
-    expect(next.googleDrive.providerSelectedAt).toBeTruthy();
+    const next = withCloudProviderEnabled(both, 's3', true);
+    expect(next.s3.syncBooks).toBe(true);
+    expect(next.s3.providerSelectedAt).toBeTruthy();
 
     // An explicit opt-out survives a redundant re-activation.
     const optedOut = {
       ...next,
-      googleDrive: { ...next.googleDrive, syncBooks: false },
+      s3: { ...next.s3, syncBooks: false },
     } as SystemSettings;
-    const again = withCloudProviderEnabled(optedOut, 'gdrive', true);
-    expect(again.googleDrive.syncBooks).toBe(false);
+    const again = withCloudProviderEnabled(optedOut, 's3', true);
+    expect(again.s3.syncBooks).toBe(false);
   });
 
   test('reconnecting a provider selected here before keeps its syncBooks opt-out', () => {
@@ -89,20 +89,19 @@ describe('withCloudProviderEnabled', () => {
     // reconnect is not a reset.
     const reconnecting = {
       ...both,
-      googleDrive: {
+      s3: {
         enabled: false,
-        accountLabel: 'a@b.com',
         syncBooks: false,
         providerSelectedAt: 1_700_000_000_000,
       },
     } as unknown as SystemSettings;
 
-    const next = withCloudProviderEnabled(reconnecting, 'gdrive', true);
+    const next = withCloudProviderEnabled(reconnecting, 's3', true);
 
-    expect(next.googleDrive.enabled).toBe(true);
-    expect(next.googleDrive.syncBooks).toBe(false);
+    expect(next.s3.enabled).toBe(true);
+    expect(next.s3.syncBooks).toBe(false);
     // The stamp still tracks the most recent selection on this device.
-    expect(next.googleDrive.providerSelectedAt).toBeGreaterThan(1_700_000_000_000);
+    expect(next.s3.providerSelectedAt).toBeGreaterThan(1_700_000_000_000);
   });
 
   test('disabling a provider keeps its config so reconnecting is one click', () => {
@@ -157,9 +156,9 @@ describe('persistCloudProviderEnabled', () => {
       settings: { version: 1, webdav: { enabled: false } } as unknown as SystemSettings,
     });
 
-    const next = await persistCloudProviderEnabled(envConfig, 'gdrive', true);
+    const next = await persistCloudProviderEnabled(envConfig, 's3', true);
 
-    expect(useSettingsStore.getState().settings.googleDrive.enabled).toBe(true);
+    expect(useSettingsStore.getState().settings.s3.enabled).toBe(true);
     expect(saveSettings).toHaveBeenCalledWith(next);
     expect(mockBroadcastGlobalSettings).toHaveBeenCalledWith(next, {
       includeCloudSyncProviders: true,

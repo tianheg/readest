@@ -56,7 +56,7 @@ const routing = vi.hoisted(() => ({
 
 vi.mock('@/services/sync/cloudSyncProvider', () => ({
   getActiveFileSyncBackends: () => routing.backends,
-  settingsKeyForBackend: (kind: FileSyncBackendKind) => (kind === 'gdrive' ? 'googleDrive' : kind),
+  settingsKeyForBackend: (kind: FileSyncBackendKind) => kind,
 }));
 
 vi.mock('@/hooks/useQuotaStats', () => ({
@@ -82,7 +82,7 @@ vi.mock('@/app/reader/hooks/useWindowActiveChanged', () => ({
 const settingsState = vi.hoisted(() => ({
   settings: {
     webdav: { enabled: true, serverUrl: 'https://dav.example', username: 'u', password: 'p' },
-    googleDrive: { enabled: true },
+    s3: { enabled: true },
   } as unknown as SystemSettings,
 }));
 const setSettingsMock = vi.fn((next: SystemSettings) => {
@@ -178,10 +178,10 @@ const noteB: BookNote = {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  routing.backends = ['webdav', 'gdrive'];
+  routing.backends = ['webdav', 's3'];
   settingsState.settings = {
     webdav: { enabled: true, serverUrl: 'https://dav.example', username: 'u', password: 'p' },
-    googleDrive: { enabled: true },
+    s3: { enabled: true },
   } as unknown as SystemSettings;
   bookDataState.config = { updatedAt: 1, location: 'local-loc', booknotes: [] };
   progressState.location = 'local-loc';
@@ -378,16 +378,16 @@ describe('useFileSync review fixes', () => {
   });
 
   test('the expired-session hint fires once per backend across many push cycles while a sibling keeps succeeding', async () => {
-    routing.backends = ['webdav', 'gdrive'];
-    // Engines are built in `activeKinds` order (webdav, then gdrive), and
+    routing.backends = ['webdav', 's3'];
+    // Engines are built in `activeKinds` order (webdav, then s3), and
     // every push cycle calls pushBookConfig once per engine in that fixed
     // order — so odd calls are webdav (kept healthy) and even calls are
-    // gdrive (kept expired).
+    // s3 (kept expired).
     let callIndex = 0;
     pushBookConfig.mockImplementation(async () => {
       callIndex += 1;
       if (callIndex % 2 === 0) {
-        throw new FileSyncError('Drive session expired', 'AUTH_FAILED');
+        throw new FileSyncError('S3 session expired', 'AUTH_FAILED');
       }
       return undefined;
     });
@@ -416,12 +416,12 @@ describe('useFileSync review fixes', () => {
     eventDispatcher.off('hint', onHint);
 
     expect(pushBookConfig).toHaveBeenCalledTimes(6);
-    const expiredHints = hints.filter((m) => m === 'Google Drive session expired');
+    const expiredHints = hints.filter((m) => m === 'Cloud sync session expired');
     expect(expiredHints).toHaveLength(1);
   });
 
   test('a backend with syncNotes false does not contribute its remote notes even when a sibling wants notes', async () => {
-    routing.backends = ['webdav', 'gdrive'];
+    routing.backends = ['webdav', 's3'];
     settingsState.settings = {
       webdav: {
         enabled: true,
@@ -430,10 +430,10 @@ describe('useFileSync review fixes', () => {
         password: 'p',
         syncNotes: false,
       },
-      googleDrive: { enabled: true, syncNotes: true },
+      s3: { enabled: true, syncNotes: true },
     } as unknown as SystemSettings;
 
-    // webdav's remote contributes noteA; gdrive's mock mirrors the real
+    // webdav's remote contributes noteA; s3's mock mirrors the real
     // engine's union-merge behaviour (it merges what it's handed with its own
     // remote note), so if noteA had leaked past webdav's opt-out it would
     // show up here too.
@@ -469,7 +469,7 @@ describe('useFileSync review fixes', () => {
   });
 
   test('a push cycle across two backends stamps lastSyncedAt in a single settings save, not one per backend', async () => {
-    // Default routing (`beforeEach`) already enables two backends (webdav, gdrive).
+    // Default routing (`beforeEach`) already enables two backends (webdav, s3).
     const { result } = renderHook(() => useFileSync('h1-view1'));
 
     // Let the natural book-open flow settle before isolating a single cycle.

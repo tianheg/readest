@@ -38,8 +38,6 @@ import KOSyncForm from './integrations/KOSyncForm';
 
 import LocalSendForm from './integrations/LocalSendForm';
 import WebDAVForm from './integrations/WebDAVForm';
-import GoogleDriveForm from './integrations/GoogleDriveForm';
-import OneDriveForm from './integrations/OneDriveForm';
 import ICloudForm from './integrations/ICloudForm';
 import S3Form from './integrations/S3Form';
 import { persistCloudProviderEnabled } from './integrations/cloudSync';
@@ -62,9 +60,7 @@ import { SectionTitle, SettingLabel, Tips } from './primitives';
 type SubPage =
   | 'kosync'
   | 'webdav'
-  | 'gdrive'
   | 's3'
-  | 'onedrive'
   | 'icloud'
   | 'opds'
   | 'audiobookshelf'
@@ -174,12 +170,7 @@ const IntegrationsPanel: React.FC = () => {
   useEffect(() => {
     if (!requestedSubPage) return;
     const isCloudRequest =
-      requestedSubPage === 'webdav' ||
-      requestedSubPage === 'gdrive' ||
-      requestedSubPage === 's3' ||
-      requestedSubPage === 'onedrive' ||
-      requestedSubPage === 'icloud' ||
-      requestedSubPage === 'cloudsync';
+      requestedSubPage === 'webdav' || requestedSubPage === 's3' || requestedSubPage === 'icloud';
     // Cloud-sync sub-pages are premium-gated. If the plan is still loading, wait
     // (don't consume the request); once known, only honor it for paid plans.
     if (isCloudRequest && !isCloudSyncPremium) {
@@ -190,18 +181,13 @@ const IntegrationsPanel: React.FC = () => {
     if (
       requestedSubPage === 'kosync' ||
       requestedSubPage === 'webdav' ||
-      requestedSubPage === 'gdrive' ||
       requestedSubPage === 's3' ||
-      requestedSubPage === 'onedrive' ||
       requestedSubPage === 'icloud' ||
       requestedSubPage === 'opds' ||
       requestedSubPage === 'audiobookshelf' ||
       requestedSubPage === 'localsend'
     ) {
       setSubPage(requestedSubPage);
-    } else if (requestedSubPage === 'cloudsync') {
-      // Back-compat with the brief unified "Cloud Sync" page.
-      setSubPage('gdrive');
     }
     setRequestedSubPage(null);
   }, [requestedSubPage, setRequestedSubPage, isCloudSyncPremium, userProfilePlan]);
@@ -240,36 +226,6 @@ const IntegrationsPanel: React.FC = () => {
               <li>
                 {_('{{provider}} keeps a full copy of your books, progress, and annotations.', {
                   provider: _('WebDAV'),
-                })}
-              </li>
-              <li>
-                {_(
-                  'App settings, reading statistics, and dictionaries still sync through your Readest account while signed in.',
-                )}
-              </li>
-            </Tips>
-          </div>
-        )}
-      </div>
-    );
-  if (subPage === 'gdrive')
-    return (
-      <div className='my-4 w-full'>
-        <SubPageHeader
-          parentLabel={_('Integrations')}
-          currentLabel={_('Google Drive')}
-          description={_(
-            'Sync your library, reading progress, and highlights with your Google Drive.',
-          )}
-          onBack={() => setSubPage(null)}
-        />
-        <GoogleDriveForm />
-        {settings.googleDrive?.enabled && (
-          <div className='mt-5'>
-            <Tips>
-              <li>
-                {_('{{provider}} keeps a full copy of your books, progress, and annotations.', {
-                  provider: _('Google Drive'),
                 })}
               </li>
               <li>
@@ -324,36 +280,6 @@ const IntegrationsPanel: React.FC = () => {
             )}
           </Tips>
         </div>
-      </div>
-    );
-  if (subPage === 'onedrive')
-    return (
-      <div className='my-4 w-full'>
-        <SubPageHeader
-          parentLabel={_('Integrations')}
-          currentLabel={_('OneDrive')}
-          description={_(
-            'Sync your library, reading progress, and highlights with your Microsoft OneDrive.',
-          )}
-          onBack={() => setSubPage(null)}
-        />
-        <OneDriveForm />
-        {settings.onedrive?.enabled && (
-          <div className='mt-5'>
-            <Tips>
-              <li>
-                {_('{{provider}} keeps a full copy of your books, progress, and annotations.', {
-                  provider: _('OneDrive'),
-                })}
-              </li>
-              <li>
-                {_(
-                  'App settings, reading statistics, and dictionaries still sync through your Readest account while signed in.',
-                )}
-              </li>
-            </Tips>
-          </div>
-        )}
       </div>
     );
   if (subPage === 'icloud')

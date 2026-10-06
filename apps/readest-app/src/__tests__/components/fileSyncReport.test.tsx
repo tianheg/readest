@@ -27,7 +27,7 @@ afterEach(cleanup);
 test.each(['Escape', 'Back'])('%s dismisses successive provider reports', (key) => {
   const store = useFileSyncStore.getState();
   store.setLastError('webdav', 'WebDAV failed');
-  store.setLastError('gdrive', 'Drive failed');
+  store.setLastError('s3', 'Drive failed');
   render(<FileSyncReport />);
   const dismiss = () =>
     act(() => {
@@ -36,8 +36,8 @@ test.each(['Escape', 'Back'])('%s dismisses successive provider reports', (key) 
     });
   dismiss();
   expect(useFileSyncStore.getState().reportByKind.webdav).toBeNull();
-  expect(useFileSyncStore.getState().reportByKind.gdrive).toBe('Drive failed');
+  expect(useFileSyncStore.getState().reportByKind.s3).toBe('Drive failed');
   dismiss();
-  expect(useFileSyncStore.getState().reportByKind.gdrive).toBeNull();
-  expect(useFileSyncStore.getState().lastErrorByKind.gdrive).toBe('Drive failed');
+  expect(useFileSyncStore.getState().reportByKind.s3).toBeNull();
+  expect(useFileSyncStore.getState().lastErrorByKind.s3).toBe('Drive failed');
 });

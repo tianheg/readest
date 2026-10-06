@@ -10,8 +10,6 @@ import type { UserPlan } from '@/types/quota';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useLibraryStore } from '@/store/libraryStore';
 import { useFileSyncStore } from '@/store/fileSyncStore';
-import { isWebAppPlatform } from '@/services/environment';
-import { hasValidWebDriveToken } from '@/services/sync/providers/gdrive/auth/webTokenStore';
 import { isICloudSupportedPlatform } from '@/services/sync/providers/icloud/buildICloudProvider';
 import {
   getActiveFileSyncBackends,
@@ -39,7 +37,6 @@ import { FileSyncEngine, type SyncLibraryResult } from '@/services/sync/file/eng
  * iOS/macOS Tauri apps can reach a ubiquity container.
  */
 export const canBackendRun = (kind: FileSyncBackendKind): boolean => {
-  if (kind === 'gdrive' && isWebAppPlatform() && !hasValidWebDriveToken()) return false;
   if (kind === 'icloud' && !isICloudSupportedPlatform()) return false;
   return true;
 };

@@ -46,16 +46,6 @@ vi.mock('@/services/sync/file/engine', () => ({
   }),
 }));
 
-// Defaults keep `canBackendRun('gdrive')` true (non-web), so the existing pass
-// tests still run gdrive; the getReadyFileSyncBackends block toggles them.
-vi.mock('@/services/environment', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/services/environment')>()),
-  isWebAppPlatform: vi.fn(() => false),
-}));
-vi.mock('@/services/sync/providers/gdrive/auth/webTokenStore', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/services/sync/providers/gdrive/auth/webTokenStore')>()),
-  hasValidWebDriveToken: vi.fn(() => false),
-}));
 // jsdom is neither an iOS nor a macOS Tauri app, so the real gate would say
 // false anyway; the mock makes the platform dependency explicit and togglable.
 vi.mock('@/services/sync/providers/icloud/buildICloudProvider', () => ({
@@ -63,8 +53,6 @@ vi.mock('@/services/sync/providers/icloud/buildICloudProvider', () => ({
   buildICloudProvider: vi.fn(async () => null),
 }));
 
-import { isWebAppPlatform } from '@/services/environment';
-import { hasValidWebDriveToken } from '@/services/sync/providers/gdrive/auth/webTokenStore';
 import {
   canBackendRun,
   getReadyFileSyncBackends,
@@ -106,7 +94,10 @@ const multiProviderSettings = {
     rootPath: '/',
     syncBooks: true,
   },
-  googleDrive: { enabled: true, syncBooks: true },
+  s3: {
+    enabled: true,
+    syncBooks: true,
+  },
 } as unknown as SystemSettings;
 
 describe('runFileLibrarySyncPass', () => {
@@ -201,7 +192,7 @@ describe('runFileLibrarySyncPass', () => {
     expect(syncLibrary).toHaveBeenCalledTimes(2);
     expect(result?.booksSynced).toBe(3);
     expect(useFileSyncStore.getState().lastErrorByKind.webdav).toBe('token expired');
-    expect(useFileSyncStore.getState().lastErrorByKind.gdrive).toBeNull();
+    expect(useFileSyncStore.getState().lastErrorByKind.s3).toBeNull();
   });
 
   test('returns null when every backend fails', async () => {
@@ -300,30 +291,11 @@ describe('getReadyFileSyncBackends', () => {
       password: 'p',
       rootPath: '/',
     },
-    googleDrive: { enabled: true },
+    s3: { enabled: true },
   } as unknown as SystemSettings;
 
   beforeEach(() => {
-    vi.mocked(isWebAppPlatform).mockReturnValue(true);
-    vi.mocked(hasValidWebDriveToken).mockReturnValue(true);
     setCachedUserPlan('pro');
-  });
-
-  test('includes gdrive when the web token is valid', () => {
-    expect(getReadyFileSyncBackends(settings)).toEqual(['webdav', 'gdrive']);
-  });
-
-  test('drops gdrive when the web token is gone (canBackendRun false)', () => {
-    vi.mocked(hasValidWebDriveToken).mockReturnValue(false);
-    expect(canBackendRun('gdrive')).toBe(false);
-    expect(canBackendRun('webdav')).toBe(true);
-    expect(getReadyFileSyncBackends(settings)).toEqual(['webdav']);
-  });
-
-  test('native (non-web) keeps gdrive regardless of the web token', () => {
-    vi.mocked(isWebAppPlatform).mockReturnValue(false);
-    vi.mocked(hasValidWebDriveToken).mockReturnValue(false);
-    expect(getReadyFileSyncBackends(settings)).toEqual(['webdav', 'gdrive']);
   });
 
   test('excludes everything when the plan gate pauses third-party sync', () => {
