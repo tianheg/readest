@@ -6,7 +6,11 @@ import { webDownload } from '@/utils/transfer';
 import { GlossIndex } from './glossIndex';
 import type { GlossIndexData } from './types';
 
-export const WORDLENS_CDN_BASE = 'https://cdn.readest.com/wordlens';
+// Fork: the vendor gloss-pack CDN is removed with the rest of the readest.com
+// surface. Every production path leaves `opts.download` unset, so the guards
+// below short-circuit before any request; the injected download channel
+// (tests, future mirrors) is deliberately left open.
+export const WORDLENS_CDN_BASE = '';
 const STORE_DIR = 'wordlens'; // relative dir under BaseDir 'Data'
 const MANIFEST_FILE = 'manifest.json';
 
@@ -148,6 +152,9 @@ export const fetchManifest = async (
   const download = getDownloader(appService, opts?.download);
   manifestPromise = (async () => {
     try {
+      // Fork: no vendor base + no injected downloader → local copy only,
+      // never a request.
+      if (!WORDLENS_CDN_BASE && !opts?.download) return readPersistedManifest(appService);
       const bytes = await download(`${WORDLENS_CDN_BASE}/${MANIFEST_FILE}`);
       const text = new TextDecoder().decode(bytes);
       const manifest = JSON.parse(text) as WordLensManifest;
@@ -182,6 +189,9 @@ const ensurePackUncached = async (
   // Reader path with auto-download off: never hit the network for an uncached
   // pack. The settings panel passes allowDownload:true for explicit downloads.
   if (opts?.allowDownload === false) return null;
+
+  // Fork: no vendor base + no injected downloader → cache miss, never a fetch.
+  if (!WORDLENS_CDN_BASE && !opts?.download) return null;
 
   const download = getDownloader(appService, opts?.download);
   const url = `${WORDLENS_CDN_BASE}/${pack.file}?v=${pack.sha256.slice(0, 8)}`;
