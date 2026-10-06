@@ -25,12 +25,7 @@ import {
 } from '@/app/reader/utils/annotatorUtil';
 import { renderNoteTemplate, formatBlockQuote } from '@/utils/note';
 import { getPublicCoverUrl } from '@/utils/cover';
-import {
-  AnnotationLinkType,
-  buildAnnotationAppUrl,
-  buildAnnotationUrl,
-  buildAnnotationWebUrl,
-} from '@/utils/deeplink';
+import { AnnotationLinkType, buildAnnotationUrl, buildAnnotationWebUrl } from '@/utils/deeplink';
 import Dialog from '@/components/Dialog';
 
 interface ExportMarkdownDialogProps {
@@ -316,7 +311,6 @@ const ExportMarkdownDialog: React.FC<ExportMarkdownDialogProps> = ({
               exportConfig.linkType,
             ),
             webLink: buildAnnotationWebUrl({ bookHash, noteId: note.id, cfi: note.cfi }),
-            appLink: buildAnnotationAppUrl({ bookHash, noteId: note.id, cfi: note.cfi }),
             text: note.text || '',
             context: contexts?.[note.id] ?? '',
             note: note.note || '',
