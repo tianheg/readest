@@ -38,14 +38,9 @@ describe('middleware CORS preflight', () => {
 });
 
 describe('middleware cross-origin isolation headers', () => {
-  it('serves COEP credentialless on the /s share landing so the R2 cover <img> loads', () => {
-    // The cover redirects to a cross-origin R2 URL that can't carry a CORP
-    // header; credentialless keeps the page isolated while allowing it.
-    expect(coep('/s')).toBe('credentialless');
-    expect(coep('/s/Qmup0X1A8ovl2FmKJKA8mB')).toBe('credentialless');
-  });
-
-  it('keeps the stricter require-corp on every other document route', () => {
+  // Fork: the /s share landing is gone (share stack removed), and with it the
+  // only COEP exception — every document response is now require-corp.
+  it('keeps the stricter require-corp on every document route', () => {
     expect(coep('/')).toBe('require-corp');
     expect(coep('/library')).toBe('require-corp');
     // Must not be caught by a naive startsWith('/s').
@@ -54,12 +49,12 @@ describe('middleware cross-origin isolation headers', () => {
   });
 
   it('always pairs COOP same-origin on document responses', () => {
-    const res = middleware(new NextRequest('http://localhost:3000/s/tok'));
+    const res = middleware(new NextRequest('http://localhost:3000/'));
     expect(res.headers.get('Cross-Origin-Opener-Policy')).toBe('same-origin');
   });
 
   it('does not put COEP on /api routes', () => {
-    const res = middleware(new NextRequest('http://localhost:3000/api/share/tok'));
+    const res = middleware(new NextRequest('http://localhost:3000/api/metadata/search'));
     expect(res.headers.get('Cross-Origin-Embedder-Policy')).toBeNull();
   });
 });
